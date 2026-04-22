@@ -22,6 +22,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import com.jitji.todo.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,11 +54,11 @@ class MainActivity : AppCompatActivity() {
 
         adapter = TaskAdapter(
             onToggle = { viewModel.toggleDone(it) },
-            onClick = { openEdit(it.id) },
-            onDelete = { confirmDelete(it) }
+            onClick = { openEdit(it.id) }
         )
         binding.recycler.layoutManager = LinearLayoutManager(this)
         binding.recycler.adapter = adapter
+        attachSwipeToDelete()
         // 리스트 항목 간 연한 회색 구분선
         val divider = androidx.recyclerview.widget.DividerItemDecoration(
             this,
@@ -197,13 +202,56 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun confirmDelete(task: Task) {
+    private fun confirmDelete(task: Task, onCancel: () -> Unit) {
         AlertDialog.Builder(this)
             .setTitle(R.string.delete)
-            .setMessage("'${task.title}'을(를) 삭제할까요?")
+            .setMessage(R.string.delete_confirm_message)
             .setPositiveButton(R.string.delete) { _, _ -> viewModel.delete(task) }
-            .setNegativeButton(R.string.cancel, null)
+            .setNegativeButton(R.string.cancel) { _, _ -> onCancel() }
+            .setOnCancelListener { onCancel() }
             .show()
+    }
+
+    private fun attachSwipeToDelete() {
+        val bg = ColorDrawable(Color.parseColor("#B33A30"))
+        val cb = object : ItemTouchHelper.SimpleCallback(
+            0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                rv: RecyclerView,
+                vh: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(vh: RecyclerView.ViewHolder, direction: Int) {
+                val pos = vh.bindingAdapterPosition
+                if (pos == RecyclerView.NO_POSITION) return
+                val task = adapter.currentList[pos]
+                confirmDelete(task) { adapter.notifyItemChanged(pos) }
+            }
+
+            override fun onChildDraw(
+                c: Canvas,
+                rv: RecyclerView,
+                vh: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                val v = vh.itemView
+                if (dX > 0) {
+                    bg.setBounds(v.left, v.top, v.left + dX.toInt(), v.bottom)
+                } else if (dX < 0) {
+                    bg.setBounds(v.right + dX.toInt(), v.top, v.right, v.bottom)
+                } else {
+                    bg.setBounds(0, 0, 0, 0)
+                }
+                bg.draw(c)
+                super.onChildDraw(c, rv, vh, dX, dY, actionState, isCurrentlyActive)
+            }
+        }
+        ItemTouchHelper(cb).attachToRecyclerView(binding.recycler)
     }
 
     private fun openEdit(taskId: Long) {

@@ -14,8 +14,7 @@ import java.util.Locale
 
 class TaskAdapter(
     private val onToggle: (Task) -> Unit,
-    private val onClick: (Task) -> Unit,
-    private val onDelete: (Task) -> Unit
+    private val onClick: (Task) -> Unit
 ) : ListAdapter<Task, TaskAdapter.VH>(DIFF) {
 
     private val formatter = SimpleDateFormat("MM/dd(E) HH:mm", Locale.KOREAN)
@@ -70,7 +69,6 @@ class TaskAdapter(
 
             binding.checkDone.setOnCheckedChangeListener { _, _ -> onToggle(task) }
             binding.root.setOnClickListener { onClick(task) }
-            binding.buttonDelete.setOnClickListener { onDelete(task) }
         }
     }
 
