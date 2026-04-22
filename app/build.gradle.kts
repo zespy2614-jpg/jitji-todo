@@ -18,7 +18,7 @@ android {
         versionName = "1.0.$buildNumber"
 
         buildConfigField("String", "REPO_OWNER", "\"zespy2614-jpg\"")
-        buildConfigField("String", "REPO_NAME", "\"26.04.13\"")
+        buildConfigField("String", "REPO_NAME", "\"jitji-todo\"")
     }
 
     buildFeatures {
