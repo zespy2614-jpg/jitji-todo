@@ -67,8 +67,8 @@ class MainActivity : AppCompatActivity() {
             binding.emptyView.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
         }
 
-        // ⚙ 아이콘(좌) → 오버플로 메뉴 표시
-        binding.toolbar.setNavigationOnClickListener { openOptionsMenu() }
+        // 30일 지난 휴지통 항목 자동 정리
+        viewModel.cleanupOldDeleted()
 
         requestNotificationPermissionIfNeeded()
         ensureExactAlarmPermission()
@@ -159,6 +159,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_add -> { openAddTask(); true }
+            R.id.action_trash -> { startActivity(Intent(this, TrashActivity::class.java)); true }
             R.id.action_check_update -> { checkUpdate(); true }
             R.id.action_clear_done -> { viewModel.deleteCompleted(); true }
             R.id.action_battery_opt -> { openBatterySettings(); true }

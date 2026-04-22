@@ -10,5 +10,6 @@ data class Task(
     val memo: String = "",
     val dueAt: Long? = null,
     val isDone: Boolean = false,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val deletedAt: Long? = null
 )

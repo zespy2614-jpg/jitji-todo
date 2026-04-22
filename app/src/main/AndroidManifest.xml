@@ -48,6 +48,11 @@
             android:parentActivityName=".MainActivity"
             android:windowSoftInputMode="stateVisible|adjustResize" />
 
+        <activity
+            android:name=".TrashActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
         <receiver
             android:name=".ReminderReceiver"
             android:exported="false" />

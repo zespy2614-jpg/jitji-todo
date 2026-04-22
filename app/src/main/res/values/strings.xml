@@ -14,6 +14,11 @@
     <string name="save">저장</string>
     <string name="alarm">알람</string>
     <string name="clear_done">완료된 할일 정리</string>
+    <string name="trash">휴지통</string>
+    <string name="trash_hint">휴지통에서 30일 후 자동 삭제돼요</string>
+    <string name="trash_empty">휴지통이 비어있어요</string>
+    <string name="restore">복구</string>
+    <string name="empty_trash">휴지통 비우기</string>
     <string name="check_update">업데이트 확인</string>
     <string name="checking_update">최신 버전 확인 중…</string>
     <string name="latest_version">이미 최신 버전이에요 (v%1$d)</string>

@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/bg"
     android:orientation="vertical"
-    android:keepScreenOn="true"
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.MaterialToolbar
@@ -14,7 +13,18 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/bg"
-        app:title="" />
+        app:title="@string/trash"
+        app:titleTextColor="@color/white"
+        app:navigationIconTint="@color/white" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/trash_hint"
+        android:textColor="@color/muted"
+        android:textSize="13sp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -26,16 +36,15 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingTop="4dp"
             android:paddingBottom="16dp"
-            tools:listitem="@layout/item_task" />
+            tools:listitem="@layout/item_trash" />
 
         <TextView
             android:id="@+id/emptyView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/empty_message"
+            android:text="@string/trash_empty"
             android:textColor="@color/muted"
             android:textSize="15sp"
             android:visibility="gone" />

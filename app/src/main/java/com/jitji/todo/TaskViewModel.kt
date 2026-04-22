@@ -11,6 +11,7 @@ class TaskViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = TaskRepository(app)
     val tasks: LiveData<List<Task>> = repo.observeAll()
+    val deletedTasks: LiveData<List<Task>> = repo.observeDeleted()
 
     fun save(task: Task, onSaved: (Long) -> Unit = {}) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -41,14 +42,43 @@ class TaskViewModel(app: Application) : AndroidViewModel(app) {
 
     fun delete(task: Task) {
         viewModelScope.launch(Dispatchers.IO) {
-            repo.delete(task)
+            repo.softDelete(task)
             ReminderScheduler.cancel(getApplication(), task.id)
+        }
+    }
+
+    fun restore(task: Task) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.restore(task)
+            if (task.dueAt != null && !task.isDone) {
+                ReminderScheduler.schedule(getApplication(), task.copy(deletedAt = null))
+            }
+        }
+    }
+
+    fun deleteForever(task: Task) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.deleteForever(task)
         }
     }
 
     fun deleteCompleted() {
         viewModelScope.launch(Dispatchers.IO) {
-            repo.deleteCompleted()
+            repo.softDeleteCompleted()
+        }
+    }
+
+    fun purgeAllDeleted() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.purgeAllDeleted()
+        }
+    }
+
+    /** 30일 경과한 휴지통 항목 자동 삭제 */
+    fun cleanupOldDeleted() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val cutoff = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
+            repo.purgeOlderThan(cutoff)
         }
     }
 }
