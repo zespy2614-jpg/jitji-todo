@@ -21,7 +21,7 @@
     <string name="empty_trash">휴지통 비우기</string>
     <string name="check_update">업데이트 확인</string>
     <string name="checking_update">최신 버전 확인 중…</string>
-    <string name="latest_version">이미 최신 버전이에요 (v%1$d)</string>
+    <string name="latest_version">이미 최신 버전입니다</string>
     <string name="update_available">새 버전(v%1$d)이 있어요. 다운로드할까요?</string>
     <string name="download">다운로드</string>
     <string name="cancel">취소</string>
@@ -36,5 +36,5 @@
     <string name="battery_opt_menu">백그라운드 실행 허용</string>
     <string name="set_as_home">기본 홈화면으로 설정</string>
     <string name="set_as_home_message">홈 버튼을 누르면 항상 이 앱이 뜨게 하려면 기본 홈 앱으로 지정해주세요.</string>
-    <string name="delete_confirm_message">정말 삭제하시겠습니까?\n휴지통에 30일 동안 보관됩니다.</string>
+    <string name="delete_confirm_message">해당 메모를 삭제하시겠습니까?\n30일 동안 해당 메모는 휴지통에 보관되어 복원이 가능합니다.</string>
 </resources>

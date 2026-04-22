@@ -215,7 +215,7 @@ class MainActivity : AppCompatActivity() {
     private fun attachSwipeToDelete() {
         val bg = ColorDrawable(Color.parseColor("#B33A30"))
         val cb = object : ItemTouchHelper.SimpleCallback(
-            0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+            0, ItemTouchHelper.RIGHT
         ) {
             override fun onMove(
                 rv: RecyclerView,
@@ -298,7 +298,7 @@ class MainActivity : AppCompatActivity() {
                 if (info.versionCode <= current) {
                     Toast.makeText(
                         this@MainActivity,
-                        getString(R.string.latest_version, current),
+                        getString(R.string.latest_version),
                         Toast.LENGTH_SHORT
                     ).show()
                     return@onSuccess
