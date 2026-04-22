@@ -1,6 +1,5 @@
 package com.jitji.todo
 
-import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,18 +32,7 @@ class TaskAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(task: Task) {
-            binding.checkDone.setOnCheckedChangeListener(null)
-            binding.checkDone.isChecked = task.isDone
             binding.textTitle.text = task.title
-            if (task.isDone) {
-                binding.textTitle.paintFlags =
-                    binding.textTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                binding.textTitle.alpha = 0.45f
-            } else {
-                binding.textTitle.paintFlags =
-                    binding.textTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                binding.textTitle.alpha = 1f
-            }
 
             if (task.memo.isNotBlank()) {
                 binding.textMemo.visibility = View.VISIBLE
@@ -57,7 +45,7 @@ class TaskAdapter(
             if (due != null) {
                 binding.textDue.visibility = View.VISIBLE
                 binding.textDue.text = "⏰ " + formatter.format(Date(due))
-                val overdue = !task.isDone && due < System.currentTimeMillis()
+                val overdue = due < System.currentTimeMillis()
                 binding.textDue.setTextColor(
                     binding.root.context.getColor(
                         if (overdue) R.color.red else R.color.muted
@@ -67,7 +55,6 @@ class TaskAdapter(
                 binding.textDue.visibility = View.GONE
             }
 
-            binding.checkDone.setOnCheckedChangeListener { _, _ -> onToggle(task) }
             binding.root.setOnClickListener { onClick(task) }
         }
     }
