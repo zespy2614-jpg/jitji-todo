@@ -275,12 +275,32 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun beginDownload(info: UpdateInfo) {
-        runCatching {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(info.downloadUrl))
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
-        }.onFailure { e ->
-            Toast.makeText(this, "브라우저 열기 실패: ${e.message}", Toast.LENGTH_LONG).show()
+        if (!UpdateChecker.canInstallPackages(this)) {
+            Toast.makeText(this, getString(R.string.install_permission_needed), Toast.LENGTH_LONG).show()
+            runCatching {
+                val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName"))
+                startActivity(intent)
+            }
+            return
         }
+
+        val progress = AlertDialog.Builder(this)
+            .setMessage("v${info.versionCode} 다운로드 중…")
+            .setCancelable(false)
+            .create()
+        progress.show()
+
+        UpdateChecker.startDownload(
+            context = this,
+            info = info,
+            onDownloaded = { apk ->
+                progress.dismiss()
+                UpdateChecker.launchInstaller(this, apk)
+            },
+            onError = { msg ->
+                progress.dismiss()
+                Toast.makeText(this, "다운로드 실패: $msg", Toast.LENGTH_LONG).show()
+            }
+        )
     }
 }
