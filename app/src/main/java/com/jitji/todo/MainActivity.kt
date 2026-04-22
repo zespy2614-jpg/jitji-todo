@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         adapter = TaskAdapter(
             onToggle = { viewModel.toggleDone(it) },
@@ -53,6 +54,13 @@ class MainActivity : AppCompatActivity() {
         )
         binding.recycler.layoutManager = LinearLayoutManager(this)
         binding.recycler.adapter = adapter
+        // 리스트 항목 간 연한 회색 구분선
+        val divider = androidx.recyclerview.widget.DividerItemDecoration(
+            this,
+            androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
+        )
+        ContextCompat.getDrawable(this, R.drawable.list_divider)?.let { divider.setDrawable(it) }
+        binding.recycler.addItemDecoration(divider)
 
         viewModel.tasks.observe(this) { list ->
             adapter.submitList(list)
