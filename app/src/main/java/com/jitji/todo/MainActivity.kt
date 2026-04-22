@@ -10,14 +10,10 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -63,19 +59,8 @@ class MainActivity : AppCompatActivity() {
             binding.emptyView.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
         }
 
-        binding.editInput.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                binding.buttonAdd.isEnabled = !s.isNullOrBlank()
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
-
-        binding.editInput.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) { submitNewTask(); true } else false
-        }
-
-        binding.buttonAdd.setOnClickListener { submitNewTask() }
+        // ⚙ 아이콘(좌) → 오버플로 메뉴 표시
+        binding.toolbar.setNavigationOnClickListener { openOptionsMenu() }
 
         requestNotificationPermissionIfNeeded()
         ensureExactAlarmPermission()
@@ -158,20 +143,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun submitNewTask() {
-        val title = binding.editInput.text?.toString()?.trim().orEmpty()
-        if (title.isEmpty()) return
-        val task = Task(title = title)
-        viewModel.save(task)
-        binding.editInput.text?.clear()
-        hideKeyboard()
-    }
-
-    private fun hideKeyboard() {
-        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(binding.editInput.windowToken, 0)
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
@@ -179,11 +150,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.action_add -> { openAddTask(); true }
             R.id.action_check_update -> { checkUpdate(); true }
             R.id.action_clear_done -> { viewModel.deleteCompleted(); true }
             R.id.action_battery_opt -> { openBatterySettings(); true }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun openAddTask() {
+        startActivity(Intent(this, AddTaskActivity::class.java))
     }
 
     private fun promptBatteryOptimizationIfNeeded() {

@@ -42,6 +42,12 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".AddTaskActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
+
         <receiver
             android:name=".ReminderReceiver"
             android:exported="false" />
