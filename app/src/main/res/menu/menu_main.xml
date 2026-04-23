@@ -19,11 +19,6 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_check_update"
-        android:title="@string/check_update"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_battery_opt"
         android:title="@string/battery_opt_menu"
         app:showAsAction="never" />

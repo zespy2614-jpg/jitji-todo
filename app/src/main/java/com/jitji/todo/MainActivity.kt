@@ -95,29 +95,6 @@ class MainActivity : AppCompatActivity() {
         LockscreenService.start(this)
         ServiceWatchdog.scheduleHeartbeat(this)
         promptBatteryOptimizationIfNeeded()
-        promptOverlayPermissionIfNeeded()
-    }
-
-    private fun promptOverlayPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
-        if (Settings.canDrawOverlays(this)) return
-        AlertDialog.Builder(this)
-            .setTitle("다른 앱 위에 표시 권한")
-            .setMessage(
-                "전원 버튼으로 화면을 켤 때 앱이 자동으로 뜨려면 " +
-                    "'다른 앱 위에 표시' 권한이 필요해요. 설정에서 허용해주세요."
-            )
-            .setPositiveButton("설정 열기") { _, _ ->
-                runCatching {
-                    val intent = Intent(
-                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:$packageName")
-                    )
-                    startActivity(intent)
-                }
-            }
-            .setNegativeButton("나중에", null)
-            .show()
     }
 
     private fun promptRevertHomeIfNeeded() {
@@ -181,7 +158,6 @@ class MainActivity : AppCompatActivity() {
             R.id.action_add -> { openAddTask(); true }
             R.id.action_manage_categories -> { showManageCategoriesDialog(); true }
             R.id.action_trash -> { startActivity(Intent(this, TrashActivity::class.java)); true }
-            R.id.action_check_update -> { checkUpdate(); true }
             R.id.action_clear_done -> { viewModel.deleteCompleted(); true }
             R.id.action_battery_opt -> { openBatterySettings(); true }
             else -> super.onOptionsItemSelected(item)
@@ -510,72 +486,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkUpdate() {
-        val progress = AlertDialog.Builder(this)
-            .setMessage(R.string.checking_update)
-            .setCancelable(false)
-            .create()
-        progress.show()
-
-        lifecycleScope.launch {
-            val result = withContext(Dispatchers.IO) { UpdateChecker.fetchLatest() }
-            progress.dismiss()
-            result.onSuccess { info ->
-                val current = UpdateChecker.currentVersion()
-                if (info.versionCode <= current) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        getString(R.string.latest_version),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return@onSuccess
-                }
-                AlertDialog.Builder(this@MainActivity)
-                    .setTitle(R.string.check_update)
-                    .setMessage(
-                        getString(R.string.update_available, info.versionCode) +
-                            "\n\n" + info.body.take(400)
-                    )
-                    .setPositiveButton(R.string.download) { _, _ -> beginDownload(info) }
-                    .setNegativeButton(R.string.cancel, null)
-                    .show()
-            }.onFailure { e ->
-                Toast.makeText(
-                    this@MainActivity,
-                    "업데이트 확인 실패: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
-    }
-
-    private fun beginDownload(info: UpdateInfo) {
-        if (!UpdateChecker.canInstallPackages(this)) {
-            Toast.makeText(this, getString(R.string.install_permission_needed), Toast.LENGTH_LONG).show()
-            runCatching {
-                val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName"))
-                startActivity(intent)
-            }
-            return
-        }
-
-        val progress = AlertDialog.Builder(this)
-            .setMessage("v${info.versionCode} 다운로드 중…")
-            .setCancelable(false)
-            .create()
-        progress.show()
-
-        UpdateChecker.startDownload(
-            context = this,
-            info = info,
-            onDownloaded = { apk ->
-                progress.dismiss()
-                UpdateChecker.launchInstaller(this, apk)
-            },
-            onError = { msg ->
-                progress.dismiss()
-                Toast.makeText(this, "다운로드 실패: $msg", Toast.LENGTH_LONG).show()
-            }
-        )
-    }
 }
