@@ -7,5 +7,7 @@
         <item name="android:navigationBarColor" tools:targetApi="l">@color/bg</item>
         <item name="android:windowBackground">@color/bg</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:fontFamily">@font/noto_sans_kr</item>
+        <item name="fontFamily">@font/noto_sans_kr</item>
     </style>
 </resources>
