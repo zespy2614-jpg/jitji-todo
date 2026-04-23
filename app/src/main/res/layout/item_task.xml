@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -14,14 +13,14 @@
         android:id="@+id/textTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
+        android:textSize="16sp"
         android:textColor="@color/white" />
 
     <TextView
         android:id="@+id/textMemo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
+        android:textSize="13sp"
         android:textColor="@color/muted"
         android:layout_marginTop="2dp"
         android:visibility="gone"
@@ -32,8 +31,8 @@
         android:id="@+id/textDue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="10sp"
-        android:textColor="@color/muted"
+        android:textSize="12sp"
+        android:textColor="@color/muted_dim"
         android:layout_marginTop="2dp"
         android:visibility="gone" />
 </LinearLayout>
