@@ -3,6 +3,7 @@ package com.jitji.todo
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.jitji.todo.databinding.ItemTaskBinding
 import java.text.SimpleDateFormat
@@ -20,10 +21,23 @@ class TaskAdapter(
 
     val currentList: List<Task> get() = items.toList()
 
-    fun submitList(list: List<Task>) {
+    fun submitList(newList: List<Task>) {
+        val oldList = items.toList()
+        val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = oldList.size
+            override fun getNewListSize() = newList.size
+            override fun areItemsTheSame(o: Int, n: Int) = oldList[o].id == newList[n].id
+            override fun areContentsTheSame(o: Int, n: Int): Boolean {
+                val a = oldList[o]; val b = newList[n]
+                // sortOrder는 렌더링에 영향 없으므로 비교에서 제외 (깜빡임 방지)
+                return a.title == b.title && a.memo == b.memo &&
+                    a.dueAt == b.dueAt && a.isDone == b.isDone &&
+                    a.categoryId == b.categoryId && a.deletedAt == b.deletedAt
+            }
+        })
         items.clear()
-        items.addAll(list)
-        notifyDataSetChanged()
+        items.addAll(newList)
+        diff.dispatchUpdatesTo(this)
     }
 
     fun moveItem(from: Int, to: Int) {
