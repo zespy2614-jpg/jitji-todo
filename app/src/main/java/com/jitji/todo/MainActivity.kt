@@ -15,7 +15,9 @@ import android.view.MenuItem
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -248,18 +250,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAddCategoryDialog() {
+        val d = resources.displayMetrics.density
         val input = EditText(this)
         input.hint = getString(R.string.category_name_hint)
-        input.setPadding(48, 32, 48, 32)
-        AlertDialog.Builder(this)
+        input.setSingleLine(true)
+        input.imeOptions = EditorInfo.IME_ACTION_DONE
+        val container = FrameLayout(this)
+        val pad = (20 * d).toInt()
+        container.setPadding(pad, (8 * d).toInt(), pad, 0)
+        container.addView(input)
+        val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.new_category)
-            .setView(input)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
+            .setView(container)
+            .setPositiveButton(R.string.confirm) { _, _ ->
                 val name = input.text?.toString()?.trim().orEmpty()
                 if (name.isNotEmpty()) viewModel.addCategory(name)
             }
             .setNegativeButton(R.string.cancel, null)
-            .show()
+            .create()
+        input.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                val name = input.text?.toString()?.trim().orEmpty()
+                if (name.isNotEmpty()) viewModel.addCategory(name)
+                dialog.dismiss()
+                true
+            } else false
+        }
+        dialog.show()
     }
 
     private fun showCategoryMenu(cat: Category) {
@@ -275,18 +292,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showRenameDialog(cat: Category) {
+        val d = resources.displayMetrics.density
         val input = EditText(this)
         input.setText(cat.name)
-        input.setPadding(48, 32, 48, 32)
-        AlertDialog.Builder(this)
+        input.setSelection(cat.name.length)
+        input.setSingleLine(true)
+        input.imeOptions = EditorInfo.IME_ACTION_DONE
+        val container = FrameLayout(this)
+        val pad = (20 * d).toInt()
+        container.setPadding(pad, (8 * d).toInt(), pad, 0)
+        container.addView(input)
+        val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.rename)
-            .setView(input)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
+            .setView(container)
+            .setPositiveButton(R.string.confirm) { _, _ ->
                 val name = input.text?.toString()?.trim().orEmpty()
                 if (name.isNotEmpty()) viewModel.renameCategory(cat, name)
             }
             .setNegativeButton(R.string.cancel, null)
-            .show()
+            .create()
+        input.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                val name = input.text?.toString()?.trim().orEmpty()
+                if (name.isNotEmpty()) viewModel.renameCategory(cat, name)
+                dialog.dismiss()
+                true
+            } else false
+        }
+        dialog.show()
     }
 
     private fun promptBatteryOptimizationIfNeeded() {

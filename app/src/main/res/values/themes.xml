@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.JitjiTodo" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/send_btn_on</item>
-        <item name="colorOnPrimary">@color/white</item>
+    <style name="Theme.JitjiTodo" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">#F5F5F7</item>
+        <item name="colorOnPrimary">#1C1C1E</item>
+        <item name="colorSurface">@color/bg_elev</item>
+        <item name="colorOnSurface">@color/text_primary</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/bg</item>
         <item name="android:navigationBarColor" tools:targetApi="l">@color/bg</item>
         <item name="android:windowBackground">@color/bg</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="materialAlertDialogTheme">@style/JitjiTodo.AlertDialog</item>
+        <item name="alertDialogTheme">@style/JitjiTodo.AlertDialog</item>
+    </style>
+
+    <style name="JitjiTodo.AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/bg_elev</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="buttonBarPositiveButtonStyle">@style/JitjiTodo.AlertDialog.Button</item>
+        <item name="buttonBarNegativeButtonStyle">@style/JitjiTodo.AlertDialog.Button</item>
+        <item name="buttonBarNeutralButtonStyle">@style/JitjiTodo.AlertDialog.Button</item>
+    </style>
+
+    <style name="JitjiTodo.AlertDialog.Button" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">#F5F5F7</item>
     </style>
 </resources>

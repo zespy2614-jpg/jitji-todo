@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- iOS-dark inspired neutral palette -->
-    <color name="bg">#1C1C1E</color>
-    <color name="bg_elev">#2C2C2E</color>
-    <color name="surface">#242426</color>
+    <color name="bg">#3A3A3C</color>
+    <color name="bg_elev">#48484A</color>
+    <color name="surface">#434345</color>
     <color name="input_bg">#F2F2F7</color>
     <color name="input_text">#1C1C1E</color>
     <color name="input_hint">#8E8E93</color>
@@ -16,7 +16,7 @@
     <color name="muted">#AEAEB2</color>
     <color name="muted_dim">#7C7C80</color>
     <color name="red">#FF6B6B</color>
-    <color name="divider">#2C2C2E</color>
-    <color name="stroke">#3A3A3C</color>
-    <color name="ic_launcher_background">#1C1C1E</color>
+    <color name="divider">#48484A</color>
+    <color name="stroke">#5A5A5C</color>
+    <color name="ic_launcher_background">#3A3A3C</color>
 </resources>
