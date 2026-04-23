@@ -14,6 +14,9 @@ interface CategoryDao {
     @Insert
     suspend fun insert(c: Category): Long
 
+    @Query("SELECT COALESCE(MAX(sortOrder), 0) FROM categories")
+    suspend fun maxSortOrder(): Long
+
     @Update
     suspend fun update(c: Category)
 

@@ -30,7 +30,10 @@ class TaskRepository(context: Context) {
         }
     }
 
-    suspend fun addCategory(name: String): Long = catDao.insert(Category(name = name))
+    suspend fun addCategory(name: String): Long {
+        val next = catDao.maxSortOrder() + 1
+        return catDao.insert(Category(name = name, sortOrder = next))
+    }
     suspend fun renameCategory(c: Category, newName: String) = catDao.update(c.copy(name = newName))
     suspend fun deleteCategory(id: Long) {
         catDao.unlinkTasks(id)

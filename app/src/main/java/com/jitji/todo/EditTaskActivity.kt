@@ -28,6 +28,8 @@ class EditTaskActivity : AppCompatActivity() {
     private var dueAt: Long? = null
     private var isDone: Boolean = false
     private var createdAt: Long = System.currentTimeMillis()
+    private var categoryId: Long? = null
+    private var sortOrder: Long = System.currentTimeMillis()
 
     private val dueFormatter = SimpleDateFormat("yyyy/MM/dd(E) HH:mm", Locale.KOREAN)
 
@@ -60,9 +62,10 @@ class EditTaskActivity : AppCompatActivity() {
         }
         binding.buttonSave.setOnClickListener { save() }
 
-        if (editingId != 0L) loadExisting()
+        if (editingId != 0L) loadExisting() else renderCategoryBar(emptyList())
         renderQuickAlarms()
         refreshDueLabel()
+        viewModel.categories.observe(this) { cats -> renderCategoryBar(cats) }
     }
 
     private fun renderQuickAlarms() {
@@ -96,6 +99,40 @@ class EditTaskActivity : AppCompatActivity() {
         }
     }
 
+    private fun renderCategoryBar(cats: List<Category>) {
+        binding.categoryBar.removeAllViews()
+        val density = resources.displayMetrics.density
+        // "전체(없음)" 칩
+        binding.categoryBar.addView(makeCategoryChip("전체", null, density))
+        cats.forEach { c ->
+            binding.categoryBar.addView(makeCategoryChip(c.name, c.id, density))
+        }
+    }
+
+    private fun makeCategoryChip(label: String, id: Long?, density: Float): TextView {
+        val tv = TextView(this)
+        tv.text = label
+        val selected = categoryId == id
+        tv.setBackgroundResource(if (selected) R.drawable.bg_chip_selected else R.drawable.bg_chip)
+        tv.setTextColor(getColor(if (selected) R.color.input_text else R.color.white))
+        tv.textSize = 12.5f
+        val padH = (14 * density).toInt()
+        val padV = (7 * density).toInt()
+        tv.setPadding(padH, padV, padH, padV)
+        tv.gravity = Gravity.CENTER
+        val lp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        lp.marginEnd = (6 * density).toInt()
+        tv.layoutParams = lp
+        tv.setOnClickListener {
+            categoryId = id
+            viewModel.categories.value?.let { renderCategoryBar(it) }
+        }
+        return tv
+    }
+
     private fun loadExisting() {
         lifecycleScope.launch {
             val task = withContext(Dispatchers.IO) {
@@ -106,7 +143,10 @@ class EditTaskActivity : AppCompatActivity() {
             dueAt = task.dueAt
             isDone = task.isDone
             createdAt = task.createdAt
+            categoryId = task.categoryId
+            sortOrder = task.sortOrder
             refreshDueLabel()
+            viewModel.categories.value?.let { renderCategoryBar(it) }
         }
     }
 
@@ -162,7 +202,9 @@ class EditTaskActivity : AppCompatActivity() {
             memo = memo,
             dueAt = dueAt,
             isDone = isDone,
-            createdAt = createdAt
+            createdAt = createdAt,
+            categoryId = categoryId,
+            sortOrder = sortOrder
         )
         viewModel.save(task) { runOnUiThread { finish() } }
     }
