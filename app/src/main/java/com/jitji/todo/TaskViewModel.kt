@@ -12,9 +12,13 @@ import kotlinx.coroutines.launch
 class TaskViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = TaskRepository(app)
+    private val prefs = app.getSharedPreferences("jitji_ui", android.content.Context.MODE_PRIVATE)
+    private val PREF_SELECTED_CATEGORY = "selected_category_id"
 
     /** null = 전체 카테고리 */
-    private val selectedCategoryId = MutableLiveData<Long?>(null)
+    private val selectedCategoryId = MutableLiveData<Long?>(
+        prefs.getLong(PREF_SELECTED_CATEGORY, -1L).takeIf { it != -1L }
+    )
 
     val tasks: LiveData<List<Task>> = selectedCategoryId.switchMap { id ->
         if (id == null) repo.observeAll() else repo.observeByCategory(id)
@@ -24,7 +28,10 @@ class TaskViewModel(app: Application) : AndroidViewModel(app) {
 
     fun currentCategoryId(): Long? = selectedCategoryId.value
     fun selectCategory(id: Long?) {
-        if (selectedCategoryId.value != id) selectedCategoryId.value = id
+        if (selectedCategoryId.value != id) {
+            selectedCategoryId.value = id
+            prefs.edit().putLong(PREF_SELECTED_CATEGORY, id ?: -1L).apply()
+        }
     }
 
     fun addCategory(name: String) {
@@ -40,6 +47,7 @@ class TaskViewModel(app: Application) : AndroidViewModel(app) {
             repo.deleteCategory(c.id)
             if (selectedCategoryId.value == c.id) {
                 selectedCategoryId.postValue(null)
+                prefs.edit().putLong(PREF_SELECTED_CATEGORY, -1L).apply()
             }
         }
     }
