@@ -16,15 +16,31 @@ object ReminderScheduler {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pi = buildPendingIntent(context, task.id, task.title, task.memo)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (am.canScheduleExactAlarms()) {
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, dueAt, pi)
+        // 알람을 열면 MainActivity로 (AlarmClockInfo 용 showIntent)
+        val showIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val showPi = PendingIntent.getActivity(
+            context,
+            task.id.toInt(),
+            showIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (am.canScheduleExactAlarms()) {
+                    // setAlarmClock: Doze/절전 완전 우회, 안드로이드가 "알람"으로 인식
+                    am.setAlarmClock(AlarmManager.AlarmClockInfo(dueAt, showPi), pi)
+                } else {
+                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, dueAt, pi)
+                }
             } else {
-                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, dueAt, pi)
+                am.setAlarmClock(AlarmManager.AlarmClockInfo(dueAt, showPi), pi)
             }
-        } else {
-            @Suppress("DEPRECATION")
-            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, dueAt, pi)
+        } catch (se: SecurityException) {
+            // 권한 없으면 inexact로 폴백
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, dueAt, pi)
         }
     }
 
