@@ -76,6 +76,40 @@ class AddTaskActivity : AppCompatActivity() {
         }
         renderQuickAlarms()
         refreshDueLabel()
+        viewModel.categories.observe(this) { cats -> renderCategoryBar(cats) }
+    }
+
+    private fun renderCategoryBar(cats: List<Category>) {
+        binding.categoryBar.removeAllViews()
+        val density = resources.displayMetrics.density
+        binding.categoryBar.addView(makeCategoryChip("전체", null, density))
+        cats.forEach { c ->
+            binding.categoryBar.addView(makeCategoryChip(c.name, c.id, density))
+        }
+    }
+
+    private fun makeCategoryChip(label: String, id: Long?, density: Float): TextView {
+        val tv = TextView(this)
+        tv.text = label
+        val selected = categoryId == id
+        tv.setBackgroundResource(if (selected) R.drawable.bg_chip_selected else R.drawable.bg_chip)
+        tv.setTextColor(getColor(if (selected) R.color.input_text else R.color.white))
+        tv.textSize = 12.5f
+        val padH = (14 * density).toInt()
+        val padV = (7 * density).toInt()
+        tv.setPadding(padH, padV, padH, padV)
+        tv.gravity = Gravity.CENTER
+        val lp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        lp.marginEnd = (6 * density).toInt()
+        tv.layoutParams = lp
+        tv.setOnClickListener {
+            categoryId = id
+            viewModel.categories.value?.let { renderCategoryBar(it) }
+        }
+        return tv
     }
 
     private fun renderQuickAlarms() {
