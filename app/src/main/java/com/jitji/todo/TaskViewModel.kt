@@ -43,6 +43,10 @@ class TaskViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch(Dispatchers.IO) { repo.renameCategory(c, newName) }
     }
 
+    fun reorderCategories(ordered: List<Category>) {
+        viewModelScope.launch(Dispatchers.IO) { repo.reorderCategories(ordered) }
+    }
+
     fun deleteCategory(c: Category) {
         viewModelScope.launch(Dispatchers.IO) {
             repo.deleteCategory(c.id)

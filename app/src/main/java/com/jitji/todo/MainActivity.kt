@@ -12,6 +12,8 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
+import android.content.ClipData
+import android.view.DragEvent
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -177,6 +179,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_add -> { openAddTask(); true }
+            R.id.action_manage_categories -> { showManageCategoriesDialog(); true }
             R.id.action_trash -> { startActivity(Intent(this, TrashActivity::class.java)); true }
             R.id.action_check_update -> { checkUpdate(); true }
             R.id.action_clear_done -> { viewModel.deleteCompleted(); true }
@@ -221,11 +224,70 @@ class MainActivity : AppCompatActivity() {
         tv.layoutParams = lp
         tv.setOnClickListener { viewModel.selectCategory(id) }
         if (cat != null) {
-            tv.setOnLongClickListener {
-                showCategoryMenu(cat); true
+            tv.tag = cat.id
+            tv.setOnLongClickListener { v ->
+                val data = ClipData.newPlainText("catId", cat.id.toString())
+                val shadow = View.DragShadowBuilder(v)
+                v.startDragAndDrop(data, shadow, cat.id, 0)
+                v.alpha = 0.3f
+                true
+            }
+            tv.setOnDragListener { target, event ->
+                when (event.action) {
+                    DragEvent.ACTION_DRAG_ENTERED -> {
+                        if (target.tag != null) target.scaleX = 1.1f
+                        if (target.tag != null) target.scaleY = 1.1f
+                        true
+                    }
+                    DragEvent.ACTION_DRAG_EXITED -> {
+                        target.scaleX = 1f; target.scaleY = 1f; true
+                    }
+                    DragEvent.ACTION_DROP -> {
+                        target.scaleX = 1f; target.scaleY = 1f
+                        val sourceId = event.clipData?.getItemAt(0)?.text?.toString()?.toLongOrNull()
+                        val targetId = target.tag as? Long
+                        if (sourceId != null && targetId != null && sourceId != targetId) {
+                            reorderByDrag(sourceId, targetId)
+                        }
+                        true
+                    }
+                    DragEvent.ACTION_DRAG_ENDED -> {
+                        target.scaleX = 1f; target.scaleY = 1f
+                        target.alpha = 1f
+                        true
+                    }
+                    DragEvent.ACTION_DRAG_STARTED -> true
+                    else -> true
+                }
             }
         }
         return tv
+    }
+
+    private fun reorderByDrag(sourceId: Long, targetId: Long) {
+        val list = viewModel.categories.value?.toMutableList() ?: return
+        val fromIdx = list.indexOfFirst { it.id == sourceId }
+        val toIdx = list.indexOfFirst { it.id == targetId }
+        if (fromIdx < 0 || toIdx < 0) return
+        val item = list.removeAt(fromIdx)
+        list.add(toIdx, item)
+        viewModel.reorderCategories(list)
+    }
+
+    private fun showManageCategoriesDialog() {
+        val cats = viewModel.categories.value.orEmpty()
+        if (cats.isEmpty()) {
+            Toast.makeText(this, "카테고리가 없어요", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val names = cats.map { it.name }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle(R.string.category_manage)
+            .setItems(names) { _, which ->
+                showCategoryMenu(cats[which])
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun makeAddChip(): TextView {

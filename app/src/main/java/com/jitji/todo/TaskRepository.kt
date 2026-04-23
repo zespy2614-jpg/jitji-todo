@@ -29,4 +29,10 @@ class TaskRepository(context: Context) {
         catDao.unlinkTasks(id)
         catDao.delete(id)
     }
+    suspend fun reorderCategories(ordered: List<Category>) {
+        val now = System.currentTimeMillis()
+        ordered.forEachIndexed { index, c ->
+            catDao.update(c.copy(sortOrder = now + index))
+        }
+    }
 }
