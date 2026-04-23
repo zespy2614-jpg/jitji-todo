@@ -83,10 +83,10 @@ class AddTaskActivity : AppCompatActivity() {
             val tv = TextView(this)
             tv.text = label
             tv.setTextColor(getColor(R.color.white))
-            tv.textSize = 11f
+            tv.textSize = 12.5f
             tv.setBackgroundResource(R.drawable.bg_chip)
-            val padH = (14 * density).toInt()
-            val padV = (8 * density).toInt()
+            val padH = (16 * density).toInt()
+            val padV = (9 * density).toInt()
             tv.setPadding(padH, padV, padH, padV)
             tv.gravity = Gravity.CENTER
             val lp = LinearLayout.LayoutParams(

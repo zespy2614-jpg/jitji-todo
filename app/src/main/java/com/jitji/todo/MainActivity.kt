@@ -206,7 +206,7 @@ class MainActivity : AppCompatActivity() {
         val selected = viewModel.currentCategoryId() == id
         tv.setBackgroundResource(if (selected) R.drawable.bg_chip_selected else R.drawable.bg_chip)
         tv.setTextColor(getColor(if (selected) R.color.input_text else R.color.white))
-        tv.textSize = 11f
+        tv.textSize = 12.5f
         val pH = (14 * d).toInt()
         val pV = (7 * d).toInt()
         tv.setPadding(pH, pV, pH, pV)
@@ -215,7 +215,7 @@ class MainActivity : AppCompatActivity() {
             LinearLayout.LayoutParams.WRAP_CONTENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
-        lp.marginEnd = (8 * d).toInt()
+        lp.marginEnd = (6 * d).toInt()
         tv.layoutParams = lp
         tv.setOnClickListener { viewModel.selectCategory(id) }
         if (cat != null) {
@@ -232,7 +232,7 @@ class MainActivity : AppCompatActivity() {
         tv.text = getString(R.string.category_add)
         tv.setBackgroundResource(R.drawable.bg_chip)
         tv.setTextColor(getColor(R.color.white))
-        tv.textSize = 11f
+        tv.textSize = 12.5f
         val pH = (14 * d).toInt()
         val pV = (7 * d).toInt()
         tv.setPadding(pH, pV, pH, pV)
@@ -241,7 +241,7 @@ class MainActivity : AppCompatActivity() {
             LinearLayout.LayoutParams.WRAP_CONTENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
-        lp.marginEnd = (8 * d).toInt()
+        lp.marginEnd = (6 * d).toInt()
         tv.layoutParams = lp
         tv.setOnClickListener { showAddCategoryDialog() }
         return tv

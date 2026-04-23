@@ -28,8 +28,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:paddingHorizontal="16dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="12dp" />
+            android:paddingTop="2dp"
+            android:paddingBottom="14dp" />
     </HorizontalScrollView>
 
     <FrameLayout
@@ -43,7 +43,7 @@
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:paddingTop="4dp"
-            android:paddingBottom="24dp"
+            android:paddingBottom="32dp"
             tools:listitem="@layout/item_task" />
 
         <TextView
@@ -52,8 +52,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/empty_message"
-            android:textColor="@color/muted_dim"
-            android:textSize="15sp"
+            android:textColor="@color/text_tertiary"
+            android:textSize="14sp"
             android:visibility="gone" />
     </FrameLayout>
 </LinearLayout>
