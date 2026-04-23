@@ -161,7 +161,6 @@ class MainActivity : AppCompatActivity() {
                     WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
             )
         }
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
