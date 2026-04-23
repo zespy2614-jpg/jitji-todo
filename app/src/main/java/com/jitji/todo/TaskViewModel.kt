@@ -3,6 +3,8 @@ package com.jitji.todo
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -10,8 +12,37 @@ import kotlinx.coroutines.launch
 class TaskViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = TaskRepository(app)
-    val tasks: LiveData<List<Task>> = repo.observeAll()
+
+    /** null = 전체 카테고리 */
+    private val selectedCategoryId = MutableLiveData<Long?>(null)
+
+    val tasks: LiveData<List<Task>> = selectedCategoryId.switchMap { id ->
+        if (id == null) repo.observeAll() else repo.observeByCategory(id)
+    }
     val deletedTasks: LiveData<List<Task>> = repo.observeDeleted()
+    val categories: LiveData<List<Category>> = repo.observeCategories()
+
+    fun currentCategoryId(): Long? = selectedCategoryId.value
+    fun selectCategory(id: Long?) {
+        if (selectedCategoryId.value != id) selectedCategoryId.value = id
+    }
+
+    fun addCategory(name: String) {
+        viewModelScope.launch(Dispatchers.IO) { repo.addCategory(name) }
+    }
+
+    fun renameCategory(c: Category, newName: String) {
+        viewModelScope.launch(Dispatchers.IO) { repo.renameCategory(c, newName) }
+    }
+
+    fun deleteCategory(c: Category) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.deleteCategory(c.id)
+            if (selectedCategoryId.value == c.id) {
+                selectedCategoryId.postValue(null)
+            }
+        }
+    }
 
     fun save(task: Task, onSaved: (Long) -> Unit = {}) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -57,21 +88,15 @@ class TaskViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun deleteForever(task: Task) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repo.deleteForever(task)
-        }
+        viewModelScope.launch(Dispatchers.IO) { repo.deleteForever(task) }
     }
 
     fun deleteCompleted() {
-        viewModelScope.launch(Dispatchers.IO) {
-            repo.softDeleteCompleted()
-        }
+        viewModelScope.launch(Dispatchers.IO) { repo.softDeleteCompleted() }
     }
 
     fun purgeAllDeleted() {
-        viewModelScope.launch(Dispatchers.IO) {
-            repo.purgeAllDeleted()
-        }
+        viewModelScope.launch(Dispatchers.IO) { repo.purgeAllDeleted() }
     }
 
     /** 30일 경과한 휴지통 항목 자동 삭제 */

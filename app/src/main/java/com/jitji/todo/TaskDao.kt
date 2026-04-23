@@ -13,6 +13,9 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE deletedAt IS NULL ORDER BY isDone ASC, CASE WHEN dueAt IS NULL THEN 1 ELSE 0 END, dueAt ASC, createdAt ASC")
     fun observeAll(): LiveData<List<Task>>
 
+    @Query("SELECT * FROM tasks WHERE deletedAt IS NULL AND categoryId = :categoryId ORDER BY isDone ASC, CASE WHEN dueAt IS NULL THEN 1 ELSE 0 END, dueAt ASC, createdAt ASC")
+    fun observeByCategory(categoryId: Long): LiveData<List<Task>>
+
     @Query("SELECT * FROM tasks WHERE deletedAt IS NOT NULL ORDER BY deletedAt DESC")
     fun observeDeleted(): LiveData<List<Task>>
 

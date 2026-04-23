@@ -37,4 +37,9 @@
     <string name="set_as_home">기본 홈화면으로 설정</string>
     <string name="set_as_home_message">홈 버튼을 누르면 항상 이 앱이 뜨게 하려면 기본 홈 앱으로 지정해주세요.</string>
     <string name="delete_confirm_message">해당 메모를 삭제하시겠습니까?\n30일 동안 해당 메모는 휴지통에 보관되어 복원이 가능합니다.</string>
+    <string name="category_all">전체</string>
+    <string name="category_add">+ 추가</string>
+    <string name="category_name_hint">카테고리 이름</string>
+    <string name="rename">이름 변경</string>
+    <string name="new_category">새 카테고리</string>
 </resources>

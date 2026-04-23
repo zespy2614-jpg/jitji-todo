@@ -12,8 +12,12 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
+import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -70,6 +74,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.tasks.observe(this) { list ->
             adapter.submitList(list)
             binding.emptyView.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
+        }
+
+        viewModel.categories.observe(this) { cats ->
+            renderCategoryBar(cats)
         }
 
         // 30일 지난 휴지통 항목 자동 정리
@@ -173,7 +181,109 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openAddTask() {
-        startActivity(Intent(this, AddTaskActivity::class.java))
+        val intent = Intent(this, AddTaskActivity::class.java)
+        viewModel.currentCategoryId()?.let {
+            intent.putExtra(AddTaskActivity.EXTRA_CATEGORY_ID, it)
+        }
+        startActivity(intent)
+    }
+
+    private fun renderCategoryBar(cats: List<Category>) {
+        val bar = binding.categoryBar
+        bar.removeAllViews()
+        bar.addView(makeChip(getString(R.string.category_all), null, null))
+        cats.forEach { bar.addView(makeChip(it.name, it.id, it)) }
+        bar.addView(makeAddChip())
+    }
+
+    private fun makeChip(label: String, id: Long?, cat: Category?): TextView {
+        val d = resources.displayMetrics.density
+        val tv = TextView(this)
+        tv.text = label
+        val selected = viewModel.currentCategoryId() == id
+        tv.setBackgroundResource(if (selected) R.drawable.bg_chip_selected else R.drawable.bg_chip)
+        tv.setTextColor(getColor(if (selected) R.color.input_text else R.color.white))
+        tv.textSize = 13f
+        val pH = (14 * d).toInt()
+        val pV = (7 * d).toInt()
+        tv.setPadding(pH, pV, pH, pV)
+        tv.gravity = Gravity.CENTER
+        val lp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        lp.marginEnd = (8 * d).toInt()
+        tv.layoutParams = lp
+        tv.setOnClickListener { viewModel.selectCategory(id) }
+        if (cat != null) {
+            tv.setOnLongClickListener {
+                showCategoryMenu(cat); true
+            }
+        }
+        return tv
+    }
+
+    private fun makeAddChip(): TextView {
+        val d = resources.displayMetrics.density
+        val tv = TextView(this)
+        tv.text = getString(R.string.category_add)
+        tv.setBackgroundResource(R.drawable.bg_chip)
+        tv.setTextColor(getColor(R.color.white))
+        tv.textSize = 13f
+        val pH = (14 * d).toInt()
+        val pV = (7 * d).toInt()
+        tv.setPadding(pH, pV, pH, pV)
+        tv.gravity = Gravity.CENTER
+        val lp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        lp.marginEnd = (8 * d).toInt()
+        tv.layoutParams = lp
+        tv.setOnClickListener { showAddCategoryDialog() }
+        return tv
+    }
+
+    private fun showAddCategoryDialog() {
+        val input = EditText(this)
+        input.hint = getString(R.string.category_name_hint)
+        input.setPadding(48, 32, 48, 32)
+        AlertDialog.Builder(this)
+            .setTitle(R.string.new_category)
+            .setView(input)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val name = input.text?.toString()?.trim().orEmpty()
+                if (name.isNotEmpty()) viewModel.addCategory(name)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showCategoryMenu(cat: Category) {
+        AlertDialog.Builder(this)
+            .setTitle(cat.name)
+            .setItems(arrayOf(getString(R.string.rename), getString(R.string.delete))) { _, which ->
+                when (which) {
+                    0 -> showRenameDialog(cat)
+                    1 -> viewModel.deleteCategory(cat)
+                }
+            }
+            .show()
+    }
+
+    private fun showRenameDialog(cat: Category) {
+        val input = EditText(this)
+        input.setText(cat.name)
+        input.setPadding(48, 32, 48, 32)
+        AlertDialog.Builder(this)
+            .setTitle(R.string.rename)
+            .setView(input)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val name = input.text?.toString()?.trim().orEmpty()
+                if (name.isNotEmpty()) viewModel.renameCategory(cat, name)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun promptBatteryOptimizationIfNeeded() {
