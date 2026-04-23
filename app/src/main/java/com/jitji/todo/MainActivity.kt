@@ -79,6 +79,9 @@ class MainActivity : AppCompatActivity() {
         viewModel.categories.observe(this) { cats ->
             renderCategoryBar(cats)
         }
+        viewModel.selectedCategory.observe(this) {
+            viewModel.categories.value?.let { renderCategoryBar(it) }
+        }
 
         // 30일 지난 휴지통 항목 자동 정리
         viewModel.cleanupOldDeleted()

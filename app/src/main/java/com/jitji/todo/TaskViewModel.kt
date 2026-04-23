@@ -19,6 +19,7 @@ class TaskViewModel(app: Application) : AndroidViewModel(app) {
     private val selectedCategoryId = MutableLiveData<Long?>(
         prefs.getLong(PREF_SELECTED_CATEGORY, -1L).takeIf { it != -1L }
     )
+    val selectedCategory: LiveData<Long?> = selectedCategoryId
 
     val tasks: LiveData<List<Task>> = selectedCategoryId.switchMap { id ->
         if (id == null) repo.observeAll() else repo.observeByCategory(id)
