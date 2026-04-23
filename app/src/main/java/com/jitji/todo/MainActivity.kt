@@ -359,7 +359,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun attachSwipeToDelete() {
-        val bg = ColorDrawable(Color.parseColor("#B33A30"))
+        val bg = ColorDrawable(Color.parseColor("#48484A"))
         val cb = object : ItemTouchHelper.SimpleCallback(
             0, ItemTouchHelper.RIGHT
         ) {

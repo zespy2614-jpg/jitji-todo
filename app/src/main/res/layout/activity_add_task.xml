@@ -38,18 +38,21 @@
 
         <FrameLayout
             android:id="@+id/buttonAdd"
-            android:layout_width="56dp"
+            android:layout_width="48dp"
             android:layout_height="match_parent"
-            android:background="@drawable/bg_send_selector"
             android:clickable="true"
             android:focusable="true"
-            android:enabled="false">
+            android:enabled="false"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless">
 
             <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:id="@+id/iconAdd"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_check"
+                android:alpha="0.35"
                 android:contentDescription="@string/add_task" />
         </FrameLayout>
     </LinearLayout>

@@ -57,7 +57,9 @@ class AddTaskActivity : AppCompatActivity() {
         binding.editInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                binding.buttonAdd.isEnabled = !s.isNullOrBlank()
+                val active = !s.isNullOrBlank()
+                binding.buttonAdd.isEnabled = active
+                binding.iconAdd.alpha = if (active) 1.0f else 0.35f
             }
             override fun afterTextChanged(s: Editable?) {}
         })
