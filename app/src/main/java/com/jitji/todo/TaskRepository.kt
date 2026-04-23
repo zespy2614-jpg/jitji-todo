@@ -23,6 +23,13 @@ class TaskRepository(context: Context) {
     suspend fun purgeOlderThan(cutoff: Long) = dao.purgeOlderThan(cutoff)
     suspend fun purgeAllDeleted() = dao.purgeAllDeleted()
 
+    suspend fun reorderTasks(ordered: List<Task>) {
+        val base = System.currentTimeMillis()
+        ordered.forEachIndexed { index, t ->
+            dao.updateSortOrder(t.id, base + index)
+        }
+    }
+
     suspend fun addCategory(name: String): Long = catDao.insert(Category(name = name))
     suspend fun renameCategory(c: Category, newName: String) = catDao.update(c.copy(name = newName))
     suspend fun deleteCategory(id: Long) {

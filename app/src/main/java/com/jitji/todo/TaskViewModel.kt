@@ -108,6 +108,10 @@ class TaskViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch(Dispatchers.IO) { repo.softDeleteCompleted() }
     }
 
+    fun reorderTasks(ordered: List<Task>) {
+        viewModelScope.launch(Dispatchers.IO) { repo.reorderTasks(ordered) }
+    }
+
     fun purgeAllDeleted() {
         viewModelScope.launch(Dispatchers.IO) { repo.purgeAllDeleted() }
     }

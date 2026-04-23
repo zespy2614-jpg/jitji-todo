@@ -422,14 +422,33 @@ class MainActivity : AppCompatActivity() {
 
     private fun attachSwipeToDelete() {
         val bg = ColorDrawable(Color.parseColor("#48484A"))
+        var dragChanged = false
         val cb = object : ItemTouchHelper.SimpleCallback(
-            0, ItemTouchHelper.RIGHT
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+            ItemTouchHelper.RIGHT
         ) {
+            override fun isLongPressDragEnabled(): Boolean = true
+
             override fun onMove(
                 rv: RecyclerView,
                 vh: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
-            ): Boolean = false
+            ): Boolean {
+                val from = vh.bindingAdapterPosition
+                val to = target.bindingAdapterPosition
+                if (from == RecyclerView.NO_POSITION || to == RecyclerView.NO_POSITION) return false
+                adapter.moveItem(from, to)
+                dragChanged = true
+                return true
+            }
+
+            override fun clearView(rv: RecyclerView, vh: RecyclerView.ViewHolder) {
+                super.clearView(rv, vh)
+                if (dragChanged) {
+                    dragChanged = false
+                    viewModel.reorderTasks(adapter.currentList)
+                }
+            }
 
             override fun onSwiped(vh: RecyclerView.ViewHolder, direction: Int) {
                 val pos = vh.bindingAdapterPosition

@@ -12,5 +12,6 @@ data class Task(
     val isDone: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val deletedAt: Long? = null,
-    val categoryId: Long? = null
+    val categoryId: Long? = null,
+    val sortOrder: Long = System.currentTimeMillis()
 )

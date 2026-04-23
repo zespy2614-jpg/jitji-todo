@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [Task::class, Category::class], version = 3, exportSchema = false)
+@Database(entities = [Task::class, Category::class], version = 4, exportSchema = false)
 abstract class TaskDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun categoryDao(): CategoryDao
@@ -33,13 +33,21 @@ abstract class TaskDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE tasks ADD COLUMN sortOrder INTEGER NOT NULL DEFAULT 0")
+                // 기존 행은 createdAt을 정렬 기준으로 사용
+                db.execSQL("UPDATE tasks SET sortOrder = createdAt")
+            }
+        }
+
         fun get(context: Context): TaskDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     TaskDatabase::class.java,
                     "tasks.db"
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { INSTANCE = it }
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build().also { INSTANCE = it }
             }
     }
 }
