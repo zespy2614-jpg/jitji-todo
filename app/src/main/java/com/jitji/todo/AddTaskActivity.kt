@@ -83,7 +83,7 @@ class AddTaskActivity : AppCompatActivity() {
             val tv = TextView(this)
             tv.text = label
             tv.setTextColor(getColor(R.color.white))
-            tv.textSize = 13f
+            tv.textSize = 11f
             tv.setBackgroundResource(R.drawable.bg_chip)
             val padH = (14 * density).toInt()
             val padV = (8 * density).toInt()
