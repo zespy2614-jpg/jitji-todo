@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">잊지마 할일</string>
+    <string name="app_name">아맞다</string>
     <string name="input_hint">할일을 작성해보세요</string>
     <string name="add_task">추가</string>
     <string name="delete">삭제</string>
