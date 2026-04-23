@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>잊지마 할일 - 개인정보 처리방침</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+         max-width: 760px; margin: 40px auto; padding: 0 20px; line-height: 1.65; color: #222; }
+  h1 { border-bottom: 2px solid #4C6EF5; padding-bottom: 8px; }
+  h2 { margin-top: 32px; color: #333; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+  th { background: #f5f7ff; }
+  code { background: #f3f3f3; padding: 2px 6px; border-radius: 4px; }
+  .meta { color: #666; font-size: 0.9em; }
+</style>
+</head>
+<body>
+<h1>잊지마 할일 개인정보 처리방침</h1>
+<p class="meta">최종 수정일: 2026년 4월 23일</p>
+
+<p>본 개인정보 처리방침은 "잊지마 할일"(이하 "본 앱")이 이용자의 개인정보를 어떻게 처리하는지 설명합니다.</p>
+
+<h2>1. 수집하는 개인정보</h2>
+<p>본 앱은 <strong>어떠한 개인정보도 수집, 저장, 전송하지 않습니다.</strong></p>
+<ul>
+  <li>계정 로그인이 필요하지 않습니다.</li>
+  <li>이름, 이메일, 전화번호 등 식별 정보를 요구하지 않습니다.</li>
+  <li>광고 ID, 위치 정보, 연락처, 사진 등 기기 정보를 수집하지 않습니다.</li>
+</ul>
+
+<h2>2. 기기에 저장되는 데이터</h2>
+<p>이용자가 작성한 할 일 목록, 카테고리, 알람 시간, 메모는 <strong>이용자 기기 내부에만</strong> 저장됩니다.</p>
+<ul>
+  <li>저장 위치: 앱 전용 로컬 SQLite 데이터베이스</li>
+  <li>외부 서버로 전송되지 않습니다.</li>
+  <li>클라우드 동기화 기능을 제공하지 않습니다.</li>
+</ul>
+
+<h2>3. 사용하는 권한</h2>
+<table>
+  <tr><th>권한</th><th>사용 목적</th></tr>
+  <tr><td>POST_NOTIFICATIONS</td><td>할 일 알람을 표시하기 위함</td></tr>
+  <tr><td>SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM</td><td>지정한 정확한 시간에 알람을 울리기 위함</td></tr>
+  <tr><td>RECEIVE_BOOT_COMPLETED</td><td>기기 재부팅 후 예약된 알람 복원</td></tr>
+  <tr><td>WAKE_LOCK</td><td>알람 발생 시 기기를 깨우기 위함</td></tr>
+  <tr><td>VIBRATE</td><td>알람 진동 제공</td></tr>
+  <tr><td>FOREGROUND_SERVICE</td><td>잠금화면에 할 일을 계속 표시</td></tr>
+  <tr><td>REQUEST_IGNORE_BATTERY_OPTIMIZATIONS</td><td>배터리 최적화로 인한 알람 실패 방지 (사용자 동의 필요)</td></tr>
+  <tr><td>USE_FULL_SCREEN_INTENT</td><td>중요 알람을 전체 화면으로 표시</td></tr>
+</table>
+
+<h2>4. 제3자 제공</h2>
+<p>본 앱은 <strong>제3자 SDK를 포함하지 않으며</strong>, 어떠한 외부 업체에도 이용자 정보를 제공하지 않습니다. 광고, 분석 도구, 크래시 리포팅 도구를 사용하지 않습니다.</p>
+
+<h2>5. 아동의 개인정보</h2>
+<p>본 앱은 13세 미만 아동으로부터 개인정보를 수집하지 않습니다. 모든 데이터는 이용자 기기에만 저장됩니다.</p>
+
+<h2>6. 데이터 삭제</h2>
+<p>앱을 삭제하면 저장된 모든 할 일 데이터는 기기에서 함께 제거됩니다. 외부 서버에 남는 데이터는 없습니다.</p>
+
+<h2>7. 보안</h2>
+<p>모든 데이터는 Android의 샌드박스(앱 전용 저장 공간)에 저장되어 다른 앱에서 접근할 수 없습니다.</p>
+
+<h2>8. 처리방침 변경</h2>
+<p>본 처리방침은 법령 개정이나 앱 업데이트에 따라 변경될 수 있습니다. 변경 사항은 본 문서에 반영되며, 마지막 수정일이 갱신됩니다.</p>
+
+<h2>9. 문의</h2>
+<p>개인정보 처리 관련 문의는 아래로 연락해주세요.</p>
+<ul>
+  <li>이메일: kanjji2614@gmail.com</li>
+  <li>개발자: Alex park (jitji)</li>
+</ul>
+</body>
+</html>
