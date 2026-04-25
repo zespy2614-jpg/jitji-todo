@@ -424,7 +424,7 @@ class MainActivity : AppCompatActivity() {
         var dragChanged = false
         val cb = object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN,
-            ItemTouchHelper.RIGHT
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
             override fun isLongPressDragEnabled(): Boolean = true
 
