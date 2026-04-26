@@ -151,6 +151,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun enableShowOnLockscreen() {
+        // 알람으로 인해 잠금화면 위로 깨어나야 할 때만 플래그 적용
+        // (평상시엔 시스템 자동 화면꺼짐 타이머가 정상 동작하도록 함)
+        val fromAlarm = intent?.getBooleanExtra(EXTRA_FROM_ALARM, false) == true
+        if (!fromAlarm) return
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
@@ -168,6 +173,10 @@ class MainActivity : AppCompatActivity() {
                 km.requestDismissKeyguard(this, null)
             }
         }
+    }
+
+    companion object {
+        const val EXTRA_FROM_ALARM = "from_alarm"
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
