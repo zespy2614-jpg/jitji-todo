@@ -92,48 +92,41 @@ class AddTaskActivity : AppCompatActivity() {
         prefs.edit().putString("words", words.joinToString("")).apply()
     }
 
+    private fun makeWordChip(label: String, density: Float): TextView {
+        val tv = TextView(this)
+        tv.text = label
+        tv.typeface = android.graphics.Typeface.SANS_SERIF
+        tv.setTextColor(getColor(R.color.white))
+        tv.textSize = 12.5f
+        tv.includeFontPadding = false
+        tv.setBackgroundResource(R.drawable.bg_chip)
+        val padH = (16 * density).toInt()
+        val padV = (9 * density).toInt()
+        tv.setPadding(padH, padV, padH, padV)
+        tv.gravity = Gravity.CENTER
+        val lp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        lp.marginEnd = (8 * density).toInt()
+        tv.layoutParams = lp
+        return tv
+    }
+
     private fun renderQuickWords() {
         binding.quickWordsBar.removeAllViews()
         val density = resources.displayMetrics.density
         val words = loadWords()
         words.forEach { word ->
-            val tv = TextView(this)
-            tv.text = word
-            tv.setTextColor(getColor(R.color.white))
-            tv.textSize = 12.5f
-            tv.setBackgroundResource(R.drawable.bg_chip)
-            val padH = (16 * density).toInt()
-            val padV = (9 * density).toInt()
-            tv.setPadding(padH, padV, padH, padV)
-            tv.gravity = Gravity.CENTER
-            val lp = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            lp.marginEnd = (8 * density).toInt()
-            tv.layoutParams = lp
+            val tv = makeWordChip(word, density)
             tv.setOnClickListener { insertWordIntoTitle(word) }
             tv.setOnLongClickListener {
                 confirmDeleteWord(word); true
             }
             binding.quickWordsBar.addView(tv)
         }
-        // + 단어 추가 칩 (밝은 배경엔 진한 글자)
-        val add = TextView(this)
-        add.text = "+ 단어 추가"
-        add.setTextColor(getColor(R.color.input_text))
-        add.textSize = 12.5f
-        add.setBackgroundResource(R.drawable.bg_chip_selected)
-        val padH = (16 * density).toInt()
-        val padV = (9 * density).toInt()
-        add.setPadding(padH, padV, padH, padV)
-        add.gravity = Gravity.CENTER
-        val lp = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
-        lp.marginEnd = (8 * density).toInt()
-        add.layoutParams = lp
+        // + 단어 추가 칩 (빠른 알림과 동일한 스타일)
+        val add = makeWordChip("+ 단어 추가", density)
         add.setOnClickListener { showAddWordDialog() }
         binding.quickWordsBar.addView(add)
     }
