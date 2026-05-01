@@ -74,20 +74,119 @@ class AddTaskActivity : AppCompatActivity() {
             dueAt = null
             refreshDueLabel()
         }
-        binding.buttonAddMemoLine.setOnClickListener {
-            val current = binding.editMemo.text?.toString().orEmpty()
-            val needsNewline = current.isNotEmpty() && !current.endsWith("\n")
-            val prefix = if (needsNewline) "\n" else ""
-            binding.editMemo.append(prefix)
-            binding.editMemo.requestFocus()
-            val pos = binding.editMemo.text?.length ?: 0
-            binding.editMemo.setSelection(pos)
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(binding.editMemo, InputMethodManager.SHOW_IMPLICIT)
-        }
         renderQuickAlarms()
+        renderQuickWords()
         refreshDueLabel()
         viewModel.categories.observe(this) { cats -> renderCategoryBar(cats) }
+    }
+
+    private fun loadWords(): MutableList<String> {
+        val prefs = getSharedPreferences("jitji_words", MODE_PRIVATE)
+        val raw = prefs.getString("words", "") ?: ""
+        return if (raw.isEmpty()) mutableListOf()
+        else raw.split("").filter { it.isNotBlank() }.toMutableList()
+    }
+
+    private fun saveWords(words: List<String>) {
+        val prefs = getSharedPreferences("jitji_words", MODE_PRIVATE)
+        prefs.edit().putString("words", words.joinToString("")).apply()
+    }
+
+    private fun renderQuickWords() {
+        binding.quickWordsBar.removeAllViews()
+        val density = resources.displayMetrics.density
+        val words = loadWords()
+        words.forEach { word ->
+            val tv = TextView(this)
+            tv.text = word
+            tv.setTextColor(getColor(R.color.white))
+            tv.textSize = 12.5f
+            tv.setBackgroundResource(R.drawable.bg_chip)
+            val padH = (16 * density).toInt()
+            val padV = (9 * density).toInt()
+            tv.setPadding(padH, padV, padH, padV)
+            tv.gravity = Gravity.CENTER
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            lp.marginEnd = (8 * density).toInt()
+            tv.layoutParams = lp
+            tv.setOnClickListener { insertWordIntoTitle(word) }
+            tv.setOnLongClickListener {
+                confirmDeleteWord(word); true
+            }
+            binding.quickWordsBar.addView(tv)
+        }
+        // + 단어 추가 칩
+        val add = TextView(this)
+        add.text = "+ 단어 추가"
+        add.setTextColor(getColor(R.color.text_primary))
+        add.textSize = 12.5f
+        add.setBackgroundResource(R.drawable.bg_chip_selected)
+        val padH = (16 * density).toInt()
+        val padV = (9 * density).toInt()
+        add.setPadding(padH, padV, padH, padV)
+        add.gravity = Gravity.CENTER
+        val lp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        lp.marginEnd = (8 * density).toInt()
+        add.layoutParams = lp
+        add.setOnClickListener { showAddWordDialog() }
+        binding.quickWordsBar.addView(add)
+    }
+
+    private fun insertWordIntoTitle(word: String) {
+        val edit = binding.editInput
+        val start = edit.selectionStart.coerceAtLeast(0)
+        val end = edit.selectionEnd.coerceAtLeast(0)
+        edit.text.replace(minOf(start, end), maxOf(start, end), word)
+        edit.requestFocus()
+        edit.setSelection(minOf(start, end) + word.length)
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(edit, InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    private fun showAddWordDialog() {
+        val input = android.widget.EditText(this)
+        input.hint = "단어 입력"
+        input.inputType = android.text.InputType.TYPE_CLASS_TEXT or
+            android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+        val pad = (20 * resources.displayMetrics.density).toInt()
+        val container = android.widget.FrameLayout(this)
+        container.setPadding(pad, pad / 2, pad, 0)
+        container.addView(input)
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("자주 쓰는 단어 추가")
+            .setView(container)
+            .setPositiveButton("추가") { _, _ ->
+                val w = input.text?.toString()?.trim().orEmpty()
+                if (w.isNotEmpty()) {
+                    val list = loadWords()
+                    if (!list.contains(w)) {
+                        list.add(w)
+                        saveWords(list)
+                        renderQuickWords()
+                    }
+                }
+            }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
+    private fun confirmDeleteWord(word: String) {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("단어 삭제")
+            .setMessage("'$word' 을(를) 단어 목록에서 삭제할까요?")
+            .setPositiveButton("삭제") { _, _ ->
+                val list = loadWords().also { it.remove(word) }
+                saveWords(list)
+                renderQuickWords()
+            }
+            .setNegativeButton("취소", null)
+            .show()
     }
 
     private fun renderCategoryBar(cats: List<Category>) {
@@ -196,8 +295,7 @@ class AddTaskActivity : AppCompatActivity() {
     private fun submit() {
         val title = binding.editInput.text?.toString()?.trim().orEmpty()
         if (title.isEmpty()) return
-        val memo = binding.editMemo.text?.toString()?.trim().orEmpty()
-        viewModel.save(Task(title = title, memo = memo, dueAt = dueAt, categoryId = categoryId))
+        viewModel.save(Task(title = title, dueAt = dueAt, categoryId = categoryId))
         finish()
     }
 
