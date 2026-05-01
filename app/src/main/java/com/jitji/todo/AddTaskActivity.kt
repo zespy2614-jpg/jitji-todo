@@ -74,6 +74,17 @@ class AddTaskActivity : AppCompatActivity() {
             dueAt = null
             refreshDueLabel()
         }
+        binding.buttonAddMemoLine.setOnClickListener {
+            val current = binding.editMemo.text?.toString().orEmpty()
+            val needsNewline = current.isNotEmpty() && !current.endsWith("\n")
+            val prefix = if (needsNewline) "\n" else ""
+            binding.editMemo.append(prefix)
+            binding.editMemo.requestFocus()
+            val pos = binding.editMemo.text?.length ?: 0
+            binding.editMemo.setSelection(pos)
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(binding.editMemo, InputMethodManager.SHOW_IMPLICIT)
+        }
         renderQuickAlarms()
         refreshDueLabel()
         viewModel.categories.observe(this) { cats -> renderCategoryBar(cats) }
@@ -185,7 +196,8 @@ class AddTaskActivity : AppCompatActivity() {
     private fun submit() {
         val title = binding.editInput.text?.toString()?.trim().orEmpty()
         if (title.isEmpty()) return
-        viewModel.save(Task(title = title, dueAt = dueAt, categoryId = categoryId))
+        val memo = binding.editMemo.text?.toString()?.trim().orEmpty()
+        viewModel.save(Task(title = title, memo = memo, dueAt = dueAt, categoryId = categoryId))
         finish()
     }
 
