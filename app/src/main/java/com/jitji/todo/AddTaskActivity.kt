@@ -118,10 +118,10 @@ class AddTaskActivity : AppCompatActivity() {
             }
             binding.quickWordsBar.addView(tv)
         }
-        // + 단어 추가 칩
+        // + 단어 추가 칩 (밝은 배경엔 진한 글자)
         val add = TextView(this)
         add.text = "+ 단어 추가"
-        add.setTextColor(getColor(R.color.text_primary))
+        add.setTextColor(getColor(R.color.input_text))
         add.textSize = 12.5f
         add.setBackgroundResource(R.drawable.bg_chip_selected)
         val padH = (16 * density).toInt()
