@@ -1,7 +1,19 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+}
+
+// 한글 소스 파일이 CP949로 잘못 해석되는 문제 방지 — 컴파일러에 UTF-8 명시
+tasks.withType<JavaCompile>().configureEach {
+    options.encoding = "UTF-8"
+}
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions {
+        freeCompilerArgs = freeCompilerArgs + listOf("-module-name", "jitjitodo")
+    }
 }
 
 android {
