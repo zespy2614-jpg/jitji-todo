@@ -218,21 +218,22 @@ class AddTaskActivity : AppCompatActivity() {
         words.forEachIndexed { idx, word ->
             binding.quickWordsBar.addView(makeRemovableWordChip(word, idx, density))
         }
-        // 삭제 모드 토글 칩
-        if (words.isNotEmpty()) {
-            val delToggle = makeWordChip(if (deleteMode) "완료" else "삭제", density)
-            delToggle.setTextColor(getColor(if (deleteMode) R.color.text_primary else R.color.red))
-            delToggle.setOnClickListener {
-                deleteMode = !deleteMode
-                renderQuickWords()
-            }
-            binding.quickWordsBar.addView(delToggle)
-        }
-        // + 단어 추가 칩 (빠른 알림과 동일한 스타일) — 삭제모드 아닐 때만
+        // + 단어 추가 칩 — 삭제모드 아닐 때만
         if (!deleteMode) {
             val add = makeWordChip("+ 단어 추가", density)
             add.setOnClickListener { showAddWordDialog() }
             binding.quickWordsBar.addView(add)
+        }
+        // 헤더 우측 작은 토글 버튼
+        binding.buttonDeleteMode.text = if (deleteMode) "완료" else "삭제"
+        binding.buttonDeleteMode.setTextColor(
+            getColor(if (deleteMode) R.color.red else R.color.text_tertiary)
+        )
+        binding.buttonDeleteMode.visibility =
+            if (words.isEmpty()) View.GONE else View.VISIBLE
+        binding.buttonDeleteMode.setOnClickListener {
+            deleteMode = !deleteMode
+            renderQuickWords()
         }
     }
 
