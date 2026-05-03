@@ -30,6 +30,7 @@ class AddTaskActivity : AppCompatActivity() {
     private val viewModel: TaskViewModel by viewModels()
     private var dueAt: Long? = null
     private var categoryId: Long? = null
+    private var deleteMode: Boolean = false
     private val dueFormatter = SimpleDateFormat("MM/dd(E) HH:mm", Locale.KOREAN)
 
     private val quickAlarms = listOf(
@@ -115,13 +116,13 @@ class AddTaskActivity : AppCompatActivity() {
     }
 
     private fun makeRemovableWordChip(word: String, index: Int, density: Float): android.view.View {
-        // 가로 LinearLayout 컨테이너 (배경 chip drawable) — 단어 + × 버튼
+        // 가로 LinearLayout 컨테이너 (배경 chip drawable) — 단어 + (삭제모드일 때만) × 버튼
         val container = LinearLayout(this)
         container.orientation = LinearLayout.HORIZONTAL
         container.gravity = Gravity.CENTER_VERTICAL
         container.setBackgroundResource(R.drawable.bg_chip)
         val padL = (16 * density).toInt()
-        val padR = (6 * density).toInt()
+        val padR = if (deleteMode) (6 * density).toInt() else (16 * density).toInt()
         val padV = (9 * density).toInt()
         container.setPadding(padL, padV, padR, padV)
 
@@ -133,24 +134,26 @@ class AddTaskActivity : AppCompatActivity() {
         word_tv.includeFontPadding = false
         container.addView(word_tv)
 
-        val delete_tv = TextView(this)
-        delete_tv.text = "×"
-        delete_tv.typeface = android.graphics.Typeface.SANS_SERIF
-        delete_tv.setTextColor(getColor(R.color.text_secondary))
-        delete_tv.textSize = 17f
-        delete_tv.includeFontPadding = false
-        val deleteLp = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
-        deleteLp.marginStart = (8 * density).toInt()
-        delete_tv.layoutParams = deleteLp
-        delete_tv.setPadding((6 * density).toInt(), 0, (6 * density).toInt(), 0)
-        delete_tv.setOnClickListener {
-            val list = loadWords().also { if (it.size > index) it.removeAt(index) }
-            saveWords(list); renderQuickWords()
+        if (deleteMode) {
+            val delete_tv = TextView(this)
+            delete_tv.text = "×"
+            delete_tv.typeface = android.graphics.Typeface.SANS_SERIF
+            delete_tv.setTextColor(getColor(R.color.red))
+            delete_tv.textSize = 17f
+            delete_tv.includeFontPadding = false
+            val deleteLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            deleteLp.marginStart = (8 * density).toInt()
+            delete_tv.layoutParams = deleteLp
+            delete_tv.setPadding((6 * density).toInt(), 0, (6 * density).toInt(), 0)
+            delete_tv.setOnClickListener {
+                val list = loadWords().also { if (it.size > index) it.removeAt(index) }
+                saveWords(list); renderQuickWords()
+            }
+            container.addView(delete_tv)
         }
-        container.addView(delete_tv)
 
         val lp = android.view.ViewGroup.MarginLayoutParams(
             android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -160,12 +163,15 @@ class AddTaskActivity : AppCompatActivity() {
         lp.bottomMargin = (8 * density).toInt()
         container.layoutParams = lp
 
-        // 단어 부분 탭 → 제목에 삽입
-        word_tv.setOnClickListener { insertWordIntoTitle(word) }
+        // 단어 부분 탭 → 삭제모드 OFF면 제목에 삽입 / ON이면 무반응
+        word_tv.setOnClickListener {
+            if (!deleteMode) insertWordIntoTitle(word)
+        }
 
-        // 길게 누르기 → 드래그 시작 (위치 변경)
+        // 길게 누르기 → 드래그 시작 (위치 변경) — 삭제모드 OFF에서만
         container.tag = index
         container.setOnLongClickListener { v ->
+            if (deleteMode) return@setOnLongClickListener false
             val data = android.content.ClipData.newPlainText("word_index", index.toString())
             val shadow = android.view.View.DragShadowBuilder(v)
             v.startDragAndDrop(data, shadow, v, 0)
@@ -212,10 +218,22 @@ class AddTaskActivity : AppCompatActivity() {
         words.forEachIndexed { idx, word ->
             binding.quickWordsBar.addView(makeRemovableWordChip(word, idx, density))
         }
-        // + 단어 추가 칩 (빠른 알림과 동일한 스타일)
-        val add = makeWordChip("+ 단어 추가", density)
-        add.setOnClickListener { showAddWordDialog() }
-        binding.quickWordsBar.addView(add)
+        // 삭제 모드 토글 칩
+        if (words.isNotEmpty()) {
+            val delToggle = makeWordChip(if (deleteMode) "완료" else "삭제", density)
+            delToggle.setTextColor(getColor(if (deleteMode) R.color.text_primary else R.color.red))
+            delToggle.setOnClickListener {
+                deleteMode = !deleteMode
+                renderQuickWords()
+            }
+            binding.quickWordsBar.addView(delToggle)
+        }
+        // + 단어 추가 칩 (빠른 알림과 동일한 스타일) — 삭제모드 아닐 때만
+        if (!deleteMode) {
+            val add = makeWordChip("+ 단어 추가", density)
+            add.setOnClickListener { showAddWordDialog() }
+            binding.quickWordsBar.addView(add)
+        }
     }
 
     private fun insertWordIntoTitle(word: String) {
