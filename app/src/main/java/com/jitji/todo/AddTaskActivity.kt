@@ -104,26 +104,113 @@ class AddTaskActivity : AppCompatActivity() {
         val padV = (9 * density).toInt()
         tv.setPadding(padH, padV, padH, padV)
         tv.gravity = Gravity.CENTER
-        val lp = LinearLayout.LayoutParams(
+        val lp = android.view.ViewGroup.MarginLayoutParams(
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        lp.marginEnd = (8 * density).toInt()
+        lp.bottomMargin = (8 * density).toInt()
+        tv.layoutParams = lp
+        return tv
+    }
+
+    private fun makeRemovableWordChip(word: String, index: Int, density: Float): android.view.View {
+        // 가로 LinearLayout 컨테이너 (배경 chip drawable) — 단어 + × 버튼
+        val container = LinearLayout(this)
+        container.orientation = LinearLayout.HORIZONTAL
+        container.gravity = Gravity.CENTER_VERTICAL
+        container.setBackgroundResource(R.drawable.bg_chip)
+        val padL = (16 * density).toInt()
+        val padR = (6 * density).toInt()
+        val padV = (9 * density).toInt()
+        container.setPadding(padL, padV, padR, padV)
+
+        val word_tv = TextView(this)
+        word_tv.text = word
+        word_tv.typeface = android.graphics.Typeface.SANS_SERIF
+        word_tv.setTextColor(getColor(R.color.white))
+        word_tv.textSize = 12.5f
+        word_tv.includeFontPadding = false
+        container.addView(word_tv)
+
+        val delete_tv = TextView(this)
+        delete_tv.text = "×"
+        delete_tv.typeface = android.graphics.Typeface.SANS_SERIF
+        delete_tv.setTextColor(getColor(R.color.text_secondary))
+        delete_tv.textSize = 17f
+        delete_tv.includeFontPadding = false
+        val deleteLp = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.WRAP_CONTENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
+        deleteLp.marginStart = (8 * density).toInt()
+        delete_tv.layoutParams = deleteLp
+        delete_tv.setPadding((6 * density).toInt(), 0, (6 * density).toInt(), 0)
+        delete_tv.setOnClickListener {
+            val list = loadWords().also { if (it.size > index) it.removeAt(index) }
+            saveWords(list); renderQuickWords()
+        }
+        container.addView(delete_tv)
+
+        val lp = android.view.ViewGroup.MarginLayoutParams(
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+        )
         lp.marginEnd = (8 * density).toInt()
-        tv.layoutParams = lp
-        return tv
+        lp.bottomMargin = (8 * density).toInt()
+        container.layoutParams = lp
+
+        // 단어 부분 탭 → 제목에 삽입
+        word_tv.setOnClickListener { insertWordIntoTitle(word) }
+
+        // 길게 누르기 → 드래그 시작 (위치 변경)
+        container.tag = index
+        container.setOnLongClickListener { v ->
+            val data = android.content.ClipData.newPlainText("word_index", index.toString())
+            val shadow = android.view.View.DragShadowBuilder(v)
+            v.startDragAndDrop(data, shadow, v, 0)
+            true
+        }
+        container.setOnDragListener(dragListener)
+        return container
+    }
+
+    private val dragListener = android.view.View.OnDragListener { target, event ->
+        when (event.action) {
+            android.view.DragEvent.ACTION_DRAG_STARTED -> true
+            android.view.DragEvent.ACTION_DRAG_ENTERED -> {
+                target.alpha = 0.5f; true
+            }
+            android.view.DragEvent.ACTION_DRAG_EXITED -> {
+                target.alpha = 1.0f; true
+            }
+            android.view.DragEvent.ACTION_DROP -> {
+                target.alpha = 1.0f
+                val srcIdx = event.clipData?.getItemAt(0)?.text?.toString()?.toIntOrNull()
+                val dstIdx = target.tag as? Int
+                if (srcIdx != null && dstIdx != null && srcIdx != dstIdx) {
+                    val list = loadWords()
+                    if (srcIdx in list.indices && dstIdx in list.indices) {
+                        val w = list.removeAt(srcIdx)
+                        list.add(dstIdx, w)
+                        saveWords(list); renderQuickWords()
+                    }
+                }
+                true
+            }
+            android.view.DragEvent.ACTION_DRAG_ENDED -> {
+                target.alpha = 1.0f; true
+            }
+            else -> true
+        }
     }
 
     private fun renderQuickWords() {
         binding.quickWordsBar.removeAllViews()
         val density = resources.displayMetrics.density
         val words = loadWords()
-        words.forEach { word ->
-            val tv = makeWordChip(word, density)
-            tv.setOnClickListener { insertWordIntoTitle(word) }
-            tv.setOnLongClickListener {
-                confirmDeleteWord(word); true
-            }
-            binding.quickWordsBar.addView(tv)
+        words.forEachIndexed { idx, word ->
+            binding.quickWordsBar.addView(makeRemovableWordChip(word, idx, density))
         }
         // + 단어 추가 칩 (빠른 알림과 동일한 스타일)
         val add = makeWordChip("+ 단어 추가", density)
