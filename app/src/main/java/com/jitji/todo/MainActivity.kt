@@ -92,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.cleanupOldDeleted()
 
         requestNotificationPermissionIfNeeded()
+        promptOverlayPermissionIfNeeded()
         ensureExactAlarmPermission()
         LockscreenService.start(this)
         ServiceWatchdog.scheduleHeartbeat(this)
@@ -170,6 +171,7 @@ class MainActivity : AppCompatActivity() {
             R.id.action_trash -> { startActivity(Intent(this, TrashActivity::class.java)); true }
             R.id.action_clear_done -> { viewModel.deleteCompleted(); true }
             R.id.action_battery_opt -> { openBatterySettings(); true }
+            R.id.action_overlay_permission -> { openOverlaySettings(); true }
             R.id.action_lockscreen_permission -> { openFullScreenIntentSettings(); true }
             else -> super.onOptionsItemSelected(item)
         }
@@ -507,6 +509,31 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(R.string.open_settings) { _, _ -> openFullScreenIntentSettings() }
             .setNegativeButton(R.string.cancel, null)
             .show()
+    }
+
+    private fun promptOverlayPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
+        if (Settings.canDrawOverlays(this)) return
+        AlertDialog.Builder(this)
+            .setTitle(R.string.overlay_permission_title)
+            .setMessage(R.string.overlay_permission_message)
+            .setPositiveButton(R.string.open_settings) { _, _ -> openOverlaySettings() }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun openOverlaySettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            runCatching {
+                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+            }.onFailure {
+                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.parse("package:$packageName")
+                })
+            }
+        }
     }
 
     private fun openFullScreenIntentSettings() {

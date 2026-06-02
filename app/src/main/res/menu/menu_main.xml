@@ -24,6 +24,16 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_overlay_permission"
+        android:title="@string/overlay_permission_menu"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_lockscreen_permission"
+        android:title="@string/lockscreen_permission_menu"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_clear_done"
         android:title="@string/clear_done"
         app:showAsAction="never" />

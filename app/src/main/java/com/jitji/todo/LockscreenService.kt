@@ -90,6 +90,7 @@ class LockscreenService : Service() {
     }
 
     private fun openTodoOnLockscreen(context: Context) {
+        WakeOverlayWindow.show(context, latestTasks)
         startMainActivity(context)
         LockscreenNotification.showWakeFullscreen(context, latestTasks)
 
