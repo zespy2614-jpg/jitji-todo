@@ -7,7 +7,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -15,7 +17,10 @@ import androidx.lifecycle.Observer
 class LockscreenService : Service() {
 
     private lateinit var tasksLive: LiveData<List<Task>>
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var latestTasks: List<Task> = emptyList()
     private val observer = Observer<List<Task>> { list ->
+        latestTasks = list
         LockscreenNotification.update(this, list)
     }
 
@@ -23,17 +28,9 @@ class LockscreenService : Service() {
         override fun onReceive(ctx: Context, intent: Intent) {
             when (intent.action) {
                 Intent.ACTION_SCREEN_ON,
-                Intent.ACTION_USER_PRESENT -> Unit
+                Intent.ACTION_USER_PRESENT -> openTodoOnLockscreen(ctx)
                 else -> return
             }
-            val i = Intent(ctx, MainActivity::class.java).apply {
-                addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP
-                )
-            }
-            runCatching { ctx.startActivity(i) }
         }
     }
     private var screenReceiverRegistered = false
@@ -90,6 +87,28 @@ class LockscreenService : Service() {
         }
         ServiceWatchdog.scheduleImmediateRestart(applicationContext)
         super.onDestroy()
+    }
+
+    private fun openTodoOnLockscreen(context: Context) {
+        startMainActivity(context)
+        LockscreenNotification.showWakeFullscreen(context, latestTasks)
+
+        mainHandler.postDelayed({
+            startMainActivity(applicationContext)
+        }, 350L)
+    }
+
+    private fun startMainActivity(context: Context) {
+        val i = Intent(context, MainActivity::class.java).apply {
+            addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+            )
+            putExtra("lockscreen_wake", true)
+        }
+        runCatching { context.startActivity(i) }
     }
 
     companion object {

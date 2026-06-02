@@ -126,6 +126,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        enableShowOnLockscreen()
+        LockscreenService.start(this)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        enableShowOnLockscreen()
         LockscreenService.start(this)
     }
 
