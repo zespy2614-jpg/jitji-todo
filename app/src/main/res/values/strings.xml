@@ -37,15 +37,10 @@
     <string name="full_screen_intent_title">잠금화면 알람 허용</string>
     <string name="full_screen_intent_message">알람 시간에 아맞다가 잠금화면 위로 바로 열리려면 전체 화면 알림 권한이 필요해요. 설정에서 아맞다를 허용해주세요.</string>
     <string name="lockscreen_permission_menu">잠금화면 알람 허용</string>
-    <string name="overlay_permission_title">다른 앱 위에 표시 허용</string>
-    <string name="overlay_permission_message">화면이 꺼졌다가 켜질 때 아맞다 할일 화면을 바로 띄우려면 다른 앱 위에 표시 권한이 필요해요. 설정에서 아맞다를 허용해주세요.</string>
-    <string name="overlay_permission_menu">다른 앱 위에 표시 허용</string>
-    <string name="overlay_open_app">앱 열기</string>
-    <string name="overlay_close">닫기</string>
     <string name="alarm_dismiss">확인</string>
     <string name="alarm_open_app">앱 열기</string>
     <string name="set_as_home">기본 홈화면으로 설정</string>
-    <string name="set_as_home_message">홈 버튼을 누르면 항상 이 앱이 뜨게 하려면 기본 홈 앱으로 지정해주세요.</string>
+    <string name="set_as_home_message">화면이 꺼졌다가 켜질 때 알림이나 별도 화면 없이 아맞다 앱 화면이 바로 뜨게 하려면 기본 홈 앱으로 지정해주세요.</string>
     <string name="delete_confirm_message">해당 메모를 삭제하시겠습니까?\n30일 동안 해당 메모는 휴지통에 보관되어 복원이 가능합니다.</string>
     <string name="category_all">전체</string>
     <string name="category_add">+ 추가</string>

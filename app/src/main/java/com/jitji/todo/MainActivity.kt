@@ -9,7 +9,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
@@ -56,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableShowOnLockscreen()
+        stopLegacyLockscreenService()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
@@ -92,50 +92,45 @@ class MainActivity : AppCompatActivity() {
         viewModel.cleanupOldDeleted()
 
         requestNotificationPermissionIfNeeded()
-        promptOverlayPermissionIfNeeded()
         ensureExactAlarmPermission()
-        LockscreenService.start(this)
-        ServiceWatchdog.scheduleHeartbeat(this)
         promptFullScreenIntentPermissionIfNeeded()
-        promptBatteryOptimizationIfNeeded()
+        promptSetHomeIfNeeded()
     }
 
-    private fun promptRevertHomeIfNeeded() {
+    private fun stopLegacyLockscreenService() {
+        runCatching {
+            stopService(Intent().setClassName(packageName, "$packageName.LockscreenService"))
+        }
+        runCatching {
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            nm.cancel(9001)
+            nm.cancel(9002)
+        }
+    }
+
+    private fun promptSetHomeIfNeeded() {
         val prefs = getSharedPreferences("jitji", MODE_PRIVATE)
-        if (prefs.getBoolean("revert_home_prompted", false)) return
-        prefs.edit().putBoolean("revert_home_prompted", true).apply()
+        if (prefs.getBoolean("set_home_prompted_v46", false)) return
+        prefs.edit().putBoolean("set_home_prompted_v46", true).apply()
         AlertDialog.Builder(this)
-            .setTitle("홈 앱 되돌리기")
-            .setMessage(
-                "이전 버전에서 이 앱을 기본 홈 앱으로 설정했었습니다. " +
-                    "이제 홈 런처 기능을 제거했으니 원래 쓰던 런처로 되돌려주세요.\n\n" +
-                    "'설정 열기'를 누르면 홈 앱 선택 화면이 나옵니다."
-            )
-            .setPositiveButton("설정 열기") { _, _ ->
-                runCatching { startActivity(Intent(Settings.ACTION_HOME_SETTINGS)) }
-                    .onFailure {
-                        runCatching {
-                            val i = Intent(Intent.ACTION_MAIN)
-                            i.addCategory(Intent.CATEGORY_HOME)
-                            startActivity(Intent.createChooser(i, "홈 앱 선택"))
-                        }
-                    }
+            .setTitle(R.string.set_as_home)
+            .setMessage(R.string.set_as_home_message)
+            .setPositiveButton(R.string.open_settings) { _, _ ->
+                openHomeSettings()
             }
-            .setNegativeButton("나중에", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
     override fun onResume() {
         super.onResume()
         enableShowOnLockscreen()
-        LockscreenService.start(this)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         enableShowOnLockscreen()
-        LockscreenService.start(this)
     }
 
     private fun enableShowOnLockscreen() {
@@ -170,8 +165,7 @@ class MainActivity : AppCompatActivity() {
             R.id.action_manage_categories -> { showManageCategoriesDialog(); true }
             R.id.action_trash -> { startActivity(Intent(this, TrashActivity::class.java)); true }
             R.id.action_clear_done -> { viewModel.deleteCompleted(); true }
-            R.id.action_battery_opt -> { openBatterySettings(); true }
-            R.id.action_overlay_permission -> { openOverlaySettings(); true }
+            R.id.action_set_home -> { openHomeSettings(); true }
             R.id.action_lockscreen_permission -> { openFullScreenIntentSettings(); true }
             else -> super.onOptionsItemSelected(item)
         }
@@ -373,28 +367,14 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun promptBatteryOptimizationIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
-        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-        if (pm.isIgnoringBatteryOptimizations(packageName)) return
-        AlertDialog.Builder(this)
-            .setTitle(R.string.battery_opt_title)
-            .setMessage(R.string.battery_opt_message)
-            .setPositiveButton(R.string.open_settings) { _, _ -> openBatterySettings() }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-
-    private fun openBatterySettings() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
+    private fun openHomeSettings() {
         runCatching {
-            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-            intent.data = Uri.parse("package:$packageName")
-            startActivity(intent)
+            startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
         }.onFailure {
             runCatching {
-                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                startActivity(intent)
+                val intent = Intent(Intent.ACTION_MAIN)
+                intent.addCategory(Intent.CATEGORY_HOME)
+                startActivity(Intent.createChooser(intent, "홈 앱 선택"))
             }
         }
     }
@@ -509,31 +489,6 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(R.string.open_settings) { _, _ -> openFullScreenIntentSettings() }
             .setNegativeButton(R.string.cancel, null)
             .show()
-    }
-
-    private fun promptOverlayPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
-        if (Settings.canDrawOverlays(this)) return
-        AlertDialog.Builder(this)
-            .setTitle(R.string.overlay_permission_title)
-            .setMessage(R.string.overlay_permission_message)
-            .setPositiveButton(R.string.open_settings) { _, _ -> openOverlaySettings() }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-
-    private fun openOverlaySettings() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            runCatching {
-                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                intent.data = Uri.parse("package:$packageName")
-                startActivity(intent)
-            }.onFailure {
-                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.parse("package:$packageName")
-                })
-            }
-        }
     }
 
     private fun openFullScreenIntentSettings() {
