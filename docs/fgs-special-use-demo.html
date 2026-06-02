@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Amatda foreground service demo</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0e121a;
+      color: #f7f8fb;
+    }
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    video {
+      width: 100%;
+      border: 1px solid #2c3547;
+      background: #000;
+    }
+    p {
+      color: #cfd6e2;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Amatda foreground service special-use demo</h1>
+    <p>
+      This video demonstrates why the app uses
+      FOREGROUND_SERVICE_SPECIAL_USE: the app keeps the user's todo list
+      available on the lock screen, and when the user presses the side
+      power button to turn the screen on, the todo list opens above the
+      lock screen for immediate review.
+    </p>
+    <video controls playsinline src="fgs-special-use-demo.mp4"></video>
+  </main>
+</body>
+</html>

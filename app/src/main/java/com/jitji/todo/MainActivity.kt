@@ -3,6 +3,7 @@ package com.jitji.todo
 import android.Manifest
 import android.app.AlarmManager
 import android.app.KeyguardManager
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -94,6 +95,7 @@ class MainActivity : AppCompatActivity() {
         ensureExactAlarmPermission()
         LockscreenService.start(this)
         ServiceWatchdog.scheduleHeartbeat(this)
+        promptFullScreenIntentPermissionIfNeeded()
         promptBatteryOptimizationIfNeeded()
     }
 
@@ -160,6 +162,7 @@ class MainActivity : AppCompatActivity() {
             R.id.action_trash -> { startActivity(Intent(this, TrashActivity::class.java)); true }
             R.id.action_clear_done -> { viewModel.deleteCompleted(); true }
             R.id.action_battery_opt -> { openBatterySettings(); true }
+            R.id.action_lockscreen_permission -> { openFullScreenIntentSettings(); true }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -483,6 +486,36 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
             intent.data = Uri.parse("package:$packageName")
             startActivity(intent)
+        }
+    }
+
+    private fun promptFullScreenIntentPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return
+        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (nm.canUseFullScreenIntent()) return
+        AlertDialog.Builder(this)
+            .setTitle(R.string.full_screen_intent_title)
+            .setMessage(R.string.full_screen_intent_message)
+            .setPositiveButton(R.string.open_settings) { _, _ -> openFullScreenIntentSettings() }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun openFullScreenIntentSettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            runCatching {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+            }.onFailure {
+                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.parse("package:$packageName")
+                })
+            }
+        } else {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:$packageName")
+            })
         }
     }
 

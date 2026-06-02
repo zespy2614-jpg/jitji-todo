@@ -38,6 +38,16 @@
         </activity>
 
         <activity
+            android:name=".AlarmActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:showOnLockScreen="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.JitjiTodo.Alarm"
+            android:turnScreenOn="true" />
+
+        <activity
             android:name=".EditTaskActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />

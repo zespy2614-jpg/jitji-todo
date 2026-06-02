@@ -1,19 +1,29 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
 }
 
+// 릴리즈 서명용 properties 로드 (keystore.properties는 git ignore됨)
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.jitji.todo"
-    compileSdk = 34
+    compileSdk = 35
 
     val buildNumber = System.getenv("BUILD_NUMBER")?.toIntOrNull() ?: 1
 
     defaultConfig {
         applicationId = "com.jitji.todo"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = buildNumber
         versionName = "1.0.$buildNumber"
 
@@ -33,12 +43,25 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        create("release") {
+            if (keystoreProperties.containsKey("storeFile")) {
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
+            // keystore.properties가 있으면 release 서명, 없으면 debug 서명 (개발 편의)
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -85,6 +108,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.4")
     implementation("androidx.activity:activity-ktx:1.9.1")
     implementation("androidx.fragment:fragment-ktx:1.8.2")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
@@ -92,5 +116,4 @@ dependencies {
     ksp("androidx.room:room-compiler:$roomVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
-    implementation("androidx.work:work-runtime-ktx:2.9.1")
 }
