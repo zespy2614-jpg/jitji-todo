@@ -19,13 +19,13 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_set_home"
-        android:title="@string/set_as_home"
+        android:id="@+id/action_battery_opt"
+        android:title="@string/battery_opt_menu"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_lockscreen_permission"
-        android:title="@string/lockscreen_permission_menu"
+        android:id="@+id/action_overlay_permission"
+        android:title="@string/overlay_permission_menu"
         app:showAsAction="never" />
 
     <item

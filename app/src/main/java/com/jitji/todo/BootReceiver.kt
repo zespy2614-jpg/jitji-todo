@@ -15,6 +15,8 @@ class BootReceiver : BroadcastReceiver() {
             action != Intent.ACTION_LOCKED_BOOT_COMPLETED) return
 
         val appContext = context.applicationContext
+        LockscreenService.start(appContext)
+        ServiceWatchdog.scheduleHeartbeat(appContext)
         val pending = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {

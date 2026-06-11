@@ -1,14 +1,13 @@
 package com.jitji.todo
 
 import android.Manifest
-import android.app.AlarmManager
 import android.app.KeyguardManager
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
@@ -35,6 +34,12 @@ import androidx.recyclerview.widget.RecyclerView
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.jitji.todo.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,9 +50,21 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: TaskViewModel by viewModels()
     private lateinit var adapter: TaskAdapter
+    private lateinit var appUpdateManager: AppUpdateManager
+    private var permissionPromptShowing = false
+    private var playUpdateCheckStarted = false
 
     private val notificationPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            continuePermissionSetup()
+        }
+
+    private val playUpdateLauncher =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode != RESULT_OK) {
+                openPlayStoreUpdatePage()
+            }
+        }
 
     private val installPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
@@ -55,7 +72,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableShowOnLockscreen()
-        stopLegacyLockscreenService()
+        appUpdateManager = AppUpdateManagerFactory.create(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
@@ -91,46 +108,30 @@ class MainActivity : AppCompatActivity() {
         // 30일 지난 휴지통 항목 자동 정리
         viewModel.cleanupOldDeleted()
 
-        requestNotificationPermissionIfNeeded()
-        ensureExactAlarmPermission()
-        promptFullScreenIntentPermissionIfNeeded()
-        promptSetHomeIfNeeded()
-    }
-
-    private fun stopLegacyLockscreenService() {
-        runCatching {
-            stopService(Intent().setClassName(packageName, "$packageName.LockscreenService"))
+        val notificationPromptStarted = requestNotificationPermissionIfNeeded()
+        LockscreenService.start(this)
+        ServiceWatchdog.scheduleHeartbeat(this)
+        if (!notificationPromptStarted) {
+            continuePermissionSetup()
         }
-        runCatching {
-            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            nm.cancel(9001)
-            nm.cancel(9002)
-        }
-    }
-
-    private fun promptSetHomeIfNeeded() {
-        val prefs = getSharedPreferences("jitji", MODE_PRIVATE)
-        if (prefs.getBoolean("set_home_prompted_v46", false)) return
-        prefs.edit().putBoolean("set_home_prompted_v46", true).apply()
-        AlertDialog.Builder(this)
-            .setTitle(R.string.set_as_home)
-            .setMessage(R.string.set_as_home_message)
-            .setPositiveButton(R.string.open_settings) { _, _ ->
-                openHomeSettings()
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+        checkPlayStoreUpdateOnStart()
     }
 
     override fun onResume() {
         super.onResume()
         enableShowOnLockscreen()
+        LockscreenService.start(this)
+        if (::binding.isInitialized) {
+            continuePermissionSetup()
+        }
+        resumePlayStoreUpdateIfNeeded()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         enableShowOnLockscreen()
+        LockscreenService.start(this)
     }
 
     private fun enableShowOnLockscreen() {
@@ -144,7 +145,7 @@ class MainActivity : AppCompatActivity() {
                     WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
             )
         }
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
@@ -165,8 +166,8 @@ class MainActivity : AppCompatActivity() {
             R.id.action_manage_categories -> { showManageCategoriesDialog(); true }
             R.id.action_trash -> { startActivity(Intent(this, TrashActivity::class.java)); true }
             R.id.action_clear_done -> { viewModel.deleteCompleted(); true }
-            R.id.action_set_home -> { openHomeSettings(); true }
-            R.id.action_lockscreen_permission -> { openFullScreenIntentSettings(); true }
+            R.id.action_battery_opt -> { openBatterySettings(); true }
+            R.id.action_overlay_permission -> { openOverlaySettings(); true }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -367,15 +368,45 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun openHomeSettings() {
+    private fun continuePermissionSetup() {
+        promptBackgroundPermissionsIfNeeded()
+    }
+
+    private fun promptBackgroundPermissionsIfNeeded() {
+        if (permissionPromptShowing) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            showPermissionDialog(
+                R.string.overlay_permission_title,
+                R.string.overlay_permission_message
+            ) { openOverlaySettings() }
+            return
+        }
+        promptBatteryOptimizationIfNeeded()
+    }
+
+    private fun promptBatteryOptimizationIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || permissionPromptShowing) return
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (pm.isIgnoringBatteryOptimizations(packageName)) return
+        permissionPromptShowing = true
+        AlertDialog.Builder(this)
+            .setTitle(R.string.battery_opt_title)
+            .setMessage(R.string.battery_opt_message)
+            .setPositiveButton(R.string.battery_ignore_button) { _, _ -> openBatterySettings() }
+            .setNeutralButton(R.string.app_info_settings) { _, _ -> openAppInfoSettings() }
+            .setNegativeButton(R.string.cancel, null)
+            .setOnDismissListener { permissionPromptShowing = false }
+            .show()
+    }
+
+    private fun openBatterySettings() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
         runCatching {
-            startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
+            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+            intent.data = Uri.parse("package:$packageName")
+            startActivity(intent)
         }.onFailure {
-            runCatching {
-                val intent = Intent(Intent.ACTION_MAIN)
-                intent.addCategory(Intent.CATEGORY_HOME)
-                startActivity(Intent.createChooser(intent, "홈 앱 선택"))
-            }
+            openAppInfoSettings()
         }
     }
 
@@ -394,7 +425,7 @@ class MainActivity : AppCompatActivity() {
         var dragChanged = false
         val cb = object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN,
-            ItemTouchHelper.RIGHT
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
             override fun isLongPressDragEnabled(): Boolean = true
 
@@ -456,7 +487,7 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun requestNotificationPermissionIfNeeded() {
+    private fun requestNotificationPermissionIfNeeded(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
@@ -464,37 +495,88 @@ class MainActivity : AppCompatActivity() {
                 ) != android.content.pm.PackageManager.PERMISSION_GRANTED
             ) {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                return true
             }
         }
+        return false
     }
 
-    private fun ensureExactAlarmPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
-        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        if (am.canScheduleExactAlarms()) return
-        runCatching {
-            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-            intent.data = Uri.parse("package:$packageName")
-            startActivity(intent)
+    private fun checkPlayStoreUpdateOnStart() {
+        if (playUpdateCheckStarted || !::appUpdateManager.isInitialized) return
+        playUpdateCheckStarted = true
+        appUpdateManager.appUpdateInfo
+            .addOnSuccessListener { info ->
+                if (info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                    startPlayUpdateOrOpenStore(info)
+                }
+            }
+    }
+
+    private fun resumePlayStoreUpdateIfNeeded() {
+        if (!::appUpdateManager.isInitialized) return
+        appUpdateManager.appUpdateInfo
+            .addOnSuccessListener { info ->
+                if (info.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                    startPlayUpdateOrOpenStore(info)
+                }
+            }
+    }
+
+    private fun startPlayUpdateOrOpenStore(info: AppUpdateInfo) {
+        if (info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
+            runCatching {
+                appUpdateManager.startUpdateFlowForResult(
+                    info,
+                    playUpdateLauncher,
+                    AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+                )
+            }.onFailure {
+                openPlayStoreUpdatePage()
+            }
+        } else {
+            openPlayStoreUpdatePage()
         }
     }
 
-    private fun promptFullScreenIntentPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return
-        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (nm.canUseFullScreenIntent()) return
+    private fun openPlayStoreUpdatePage() {
+        val marketIntent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("market://details?id=$packageName")
+        ).apply {
+            setPackage("com.android.vending")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        runCatching {
+            startActivity(marketIntent)
+        }.onFailure {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+                )
+            )
+        }
+    }
+
+    private fun showPermissionDialog(
+        titleRes: Int,
+        messageRes: Int,
+        openSettings: () -> Unit
+    ) {
+        permissionPromptShowing = true
         AlertDialog.Builder(this)
-            .setTitle(R.string.full_screen_intent_title)
-            .setMessage(R.string.full_screen_intent_message)
-            .setPositiveButton(R.string.open_settings) { _, _ -> openFullScreenIntentSettings() }
+            .setTitle(titleRes)
+            .setMessage(messageRes)
+            .setPositiveButton(R.string.open_settings) { _, _ -> openSettings() }
             .setNegativeButton(R.string.cancel, null)
+            .setOnDismissListener { permissionPromptShowing = false }
             .show()
     }
 
-    private fun openFullScreenIntentSettings() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+    private fun openOverlaySettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             runCatching {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
+                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
                 intent.data = Uri.parse("package:$packageName")
                 startActivity(intent)
             }.onFailure {
@@ -502,11 +584,13 @@ class MainActivity : AppCompatActivity() {
                     data = Uri.parse("package:$packageName")
                 })
             }
-        } else {
-            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.parse("package:$packageName")
-            })
         }
+    }
+
+    private fun openAppInfoSettings() {
+        startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.parse("package:$packageName")
+        })
     }
 
 }

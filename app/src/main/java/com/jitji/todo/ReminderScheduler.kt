@@ -16,9 +16,11 @@ object ReminderScheduler {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pi = buildPendingIntent(context, task.id, task.title, task.memo)
 
-        // 알람을 열면 MainActivity로 (AlarmClockInfo 용 showIntent)
-        val showIntent = Intent(context, MainActivity::class.java).apply {
+        val showIntent = Intent(context, AlarmActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(ReminderReceiver.EXTRA_TASK_ID, task.id)
+            putExtra(ReminderReceiver.EXTRA_TITLE, task.title)
+            putExtra(ReminderReceiver.EXTRA_MEMO, task.memo)
         }
         val showPi = PendingIntent.getActivity(
             context,

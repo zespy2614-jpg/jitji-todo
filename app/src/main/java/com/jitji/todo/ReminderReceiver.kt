@@ -40,14 +40,13 @@ class ReminderReceiver : BroadcastReceiver() {
             .setContentText(memo.ifEmpty { "잊지 마세요!" })
             .setStyle(NotificationCompat.BigTextStyle().bigText(memo.ifEmpty { title }))
             .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setSound(alarmSound)
             .setVibrate(longArrayOf(0, 600, 300, 600, 300, 600))
             .setAutoCancel(true)
             .setContentIntent(contentPi)
-            .setFullScreenIntent(contentPi, true)
             .build()
 
         notification.flags = notification.flags or Notification.FLAG_INSISTENT

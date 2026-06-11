@@ -20,9 +20,12 @@ class TodoApp : Application() {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (manager.getNotificationChannel(CHANNEL_ID) != null) return
 
-        // 기존 채널 삭제 (설정이 바뀔 수 있으므로)
-        manager.getNotificationChannel("jitji_todo_reminders")?.let {
-            manager.deleteNotificationChannel("jitji_todo_reminders")
+        // Existing channel settings cannot be changed after creation, so stale alarm
+        // channel IDs are retired when this build creates the refreshed channel.
+        listOf("jitji_todo_reminders", "jitji_todo_reminders_v2").forEach { id ->
+            manager.getNotificationChannel(id)?.let {
+                manager.deleteNotificationChannel(id)
+            }
         }
 
         val audioAttrs = AudioAttributes.Builder()
@@ -52,7 +55,7 @@ class TodoApp : Application() {
     }
 
     companion object {
-        // v2: 채널 속성 변경을 위해 ID 변경
-        const val CHANNEL_ID = "jitji_todo_reminders_v2"
+        // v3: alarm full-screen behavior and channel defaults refreshed.
+        const val CHANNEL_ID = "jitji_todo_reminders_v3"
     }
 }

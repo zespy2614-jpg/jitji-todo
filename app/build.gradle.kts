@@ -7,6 +7,11 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+// 한국어 Windows에서 Gradle 데몬이 소스를 CP949로 읽어 한글이 깨지는 문제 방지
+tasks.withType<JavaCompile>().configureEach {
+    options.encoding = "UTF-8"
+}
+
 // 릴리즈 서명용 properties 로드 (keystore.properties는 git ignore됨)
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 val keystoreProperties = Properties()
@@ -108,6 +113,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.4")
     implementation("androidx.activity:activity-ktx:1.9.1")
     implementation("androidx.fragment:fragment-ktx:1.8.2")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("com.google.android.play:app-update:2.1.0")
+    implementation("com.google.android.play:app-update-ktx:2.1.0")
 
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
