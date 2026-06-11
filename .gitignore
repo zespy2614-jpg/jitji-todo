@@ -11,3 +11,5 @@ local.properties
 *.apk
 !gradle-wrapper.jar
 app/build
+keystore.properties
+*.aab
