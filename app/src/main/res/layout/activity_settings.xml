@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settingsRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbarSettings"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/bg" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="32dp">
+
+            <!-- Theme section -->
+            <TextView
+                android:id="@+id/labelTheme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/theme_title"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:paddingBottom="12dp" />
+
+            <RadioGroup
+                android:id="@+id/radioGroupTheme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/radioTheme0"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="@string/theme_default"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:buttonTint="@color/text_primary" />
+
+                <RadioButton
+                    android:id="@+id/radioTheme1"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="@string/theme_dark"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:buttonTint="@color/text_primary" />
+
+                <RadioButton
+                    android:id="@+id/radioTheme2"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="@string/theme_sepia"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:buttonTint="@color/text_primary" />
+
+                <RadioButton
+                    android:id="@+id/radioTheme3"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="@string/theme_mint"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:buttonTint="@color/text_primary" />
+
+            </RadioGroup>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:background="@color/divider" />
+
+            <!-- Font size section -->
+            <TextView
+                android:id="@+id/labelFontSize"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/font_size_title"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:paddingBottom="12dp" />
+
+            <RadioGroup
+                android:id="@+id/radioGroupFont"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/radioFontSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="@string/font_small"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:buttonTint="@color/text_primary" />
+
+                <RadioButton
+                    android:id="@+id/radioFontNormal"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="@string/font_normal"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:buttonTint="@color/text_primary" />
+
+                <RadioButton
+                    android:id="@+id/radioFontLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="@string/font_large"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:buttonTint="@color/text_primary" />
+
+                <RadioButton
+                    android:id="@+id/radioFontXLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="@string/font_xlarge"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:buttonTint="@color/text_primary" />
+
+            </RadioGroup>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

@@ -14,6 +14,8 @@ import android.view.MenuItem
 import android.content.ClipData
 import android.view.DragEvent
 import android.view.Gravity
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
@@ -53,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appUpdateManager: AppUpdateManager
     private var permissionPromptShowing = false
     private var playUpdateCheckStarted = false
+    private lateinit var gestureDetector: GestureDetector
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
@@ -115,6 +118,28 @@ class MainActivity : AppCompatActivity() {
             continuePermissionSetup()
         }
         checkPlayStoreUpdateOnStart()
+
+        gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onFling(
+                e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float
+            ): Boolean {
+                if (e1 == null) return false
+                val dx = e2.x - e1.x
+                val dy = e2.y - e1.y
+                if (dx > 140 && Math.abs(dx) > Math.abs(dy) * 2 && Math.abs(velocityX) > 200) {
+                    startActivity(Intent(this@MainActivity, CalendarActivity::class.java))
+                    return true
+                }
+                return false
+            }
+        })
+
+        ThemeManager.apply(this)
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (::gestureDetector.isInitialized) gestureDetector.onTouchEvent(ev)
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onResume() {
@@ -125,6 +150,7 @@ class MainActivity : AppCompatActivity() {
             continuePermissionSetup()
         }
         resumePlayStoreUpdateIfNeeded()
+        ThemeManager.apply(this)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -168,6 +194,7 @@ class MainActivity : AppCompatActivity() {
             R.id.action_clear_done -> { viewModel.deleteCompleted(); true }
             R.id.action_battery_opt -> { openBatterySettings(); true }
             R.id.action_overlay_permission -> { openOverlaySettings(); true }
+            R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
             R.id.action_exit_app -> { finishAffinity(); true }
             else -> super.onOptionsItemSelected(item)
         }
