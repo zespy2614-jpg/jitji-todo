@@ -168,6 +168,7 @@ class MainActivity : AppCompatActivity() {
             R.id.action_clear_done -> { viewModel.deleteCompleted(); true }
             R.id.action_battery_opt -> { openBatterySettings(); true }
             R.id.action_overlay_permission -> { openOverlaySettings(); true }
+            R.id.action_exit_app -> { finishAffinity(); true }
             else -> super.onOptionsItemSelected(item)
         }
     }

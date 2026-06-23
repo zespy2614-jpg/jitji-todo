@@ -14,6 +14,7 @@
     <string name="save">저장</string>
     <string name="alarm">알람</string>
     <string name="clear_done">완료된 할일 정리</string>
+    <string name="exit_app">앱 종료</string>
     <string name="trash">휴지통</string>
     <string name="trash_hint">휴지통에서 30일 후 자동 삭제돼요</string>
     <string name="trash_empty">휴지통이 비어있어요</string>
