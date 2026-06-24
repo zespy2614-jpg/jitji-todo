@@ -135,8 +135,6 @@ class MainActivity : AppCompatActivity() {
         })
 
         binding.pageIndicator.setOnClickListener { openCalendar() }
-
-        ThemeManager.apply(this)
     }
 
     private fun openCalendar() {
@@ -157,7 +155,6 @@ class MainActivity : AppCompatActivity() {
             continuePermissionSetup()
         }
         resumePlayStoreUpdateIfNeeded()
-        ThemeManager.apply(this)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -201,7 +198,6 @@ class MainActivity : AppCompatActivity() {
             R.id.action_clear_done -> { viewModel.deleteCompleted(); true }
             R.id.action_battery_opt -> { openBatterySettings(); true }
             R.id.action_overlay_permission -> { openOverlaySettings(); true }
-            R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
             R.id.action_exit_app -> { finishAffinity(); true }
             else -> super.onOptionsItemSelected(item)
         }

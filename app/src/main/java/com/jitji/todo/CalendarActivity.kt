@@ -58,8 +58,6 @@ class CalendarActivity : AppCompatActivity() {
         viewModel.tasks.observe(this) {
             updateTaskList()
         }
-
-        ThemeManager.apply(this)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

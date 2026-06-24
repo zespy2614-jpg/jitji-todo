@@ -49,7 +49,6 @@ class EditTaskActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityEditTaskBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ThemeManager.apply(this)
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 

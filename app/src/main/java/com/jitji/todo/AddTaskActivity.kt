@@ -48,7 +48,6 @@ class AddTaskActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAddTaskBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ThemeManager.apply(this)
 
         categoryId = intent.getLongExtra(EXTRA_CATEGORY_ID, -1L).takeIf { it != -1L }
 

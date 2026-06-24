@@ -34,11 +34,6 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_settings"
-        android:title="@string/settings"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_exit_app"
         android:title="@string/exit_app"
         app:showAsAction="never" />
