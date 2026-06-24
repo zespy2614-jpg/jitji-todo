@@ -70,6 +70,28 @@ class SettingsActivity : AppCompatActivity() {
             recreate()
         }
 
+        // 글씨 색상 복원
+        val tcRadios = listOf(
+            binding.radioTc0, binding.radioTc1, binding.radioTc2,
+            binding.radioTc3, binding.radioTc4, binding.radioTc5
+        )
+        tcRadios.getOrNull(ThemeManager.getTextColorIndex(this))?.isChecked = true
+
+        // 글씨 색상 변경
+        binding.radioGroupTextColor.setOnCheckedChangeListener { _, checkedId ->
+            val idx = when (checkedId) {
+                R.id.radioTc0 -> 0
+                R.id.radioTc1 -> 1
+                R.id.radioTc2 -> 2
+                R.id.radioTc3 -> 3
+                R.id.radioTc4 -> 4
+                R.id.radioTc5 -> 5
+                else -> 0
+            }
+            ThemeManager.setTextColorIndex(this, idx)
+            recreate()
+        }
+
         ThemeManager.apply(this)
     }
 

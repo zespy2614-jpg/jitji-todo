@@ -57,11 +57,18 @@
     <string name="theme_title">테마</string>
     <string name="font_size_title">글자 크기</string>
     <string name="theme_default">기본</string>
-    <string name="theme_dark">다크</string>
+    <string name="theme_dark">화이트</string>
     <string name="theme_sepia">세피아</string>
     <string name="theme_mint">민트</string>
     <string name="font_small">작게</string>
     <string name="font_normal">보통</string>
     <string name="font_large">크게</string>
     <string name="font_xlarge">매우크게</string>
+    <string name="text_color_title">글씨 색상</string>
+    <string name="tc_default">테마 기본</string>
+    <string name="tc_white">흰색</string>
+    <string name="tc_black">검정</string>
+    <string name="tc_gray">회색</string>
+    <string name="tc_blue">파랑</string>
+    <string name="tc_red">빨강</string>
 </resources>

@@ -13,7 +13,34 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/bg"
-        app:title="" />
+        app:title="">
+
+        <LinearLayout
+            android:id="@+id/pageIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="18dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+
+            <View
+                android:id="@+id/dotList"
+                android:layout_width="9dp"
+                android:layout_height="9dp"
+                android:layout_marginEnd="7dp"
+                android:background="@drawable/dot_active" />
+
+            <View
+                android:id="@+id/dotCalendar"
+                android:layout_width="9dp"
+                android:layout_height="9dp"
+                android:background="@drawable/dot_inactive" />
+        </LinearLayout>
+    </com.google.android.material.appbar.MaterialToolbar>
 
     <HorizontalScrollView
         android:layout_width="match_parent"

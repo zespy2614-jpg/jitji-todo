@@ -126,15 +126,22 @@ class MainActivity : AppCompatActivity() {
                 if (e1 == null) return false
                 val dx = e2.x - e1.x
                 val dy = e2.y - e1.y
-                if (dx > 140 && Math.abs(dx) > Math.abs(dy) * 2 && Math.abs(velocityX) > 200) {
-                    startActivity(Intent(this@MainActivity, CalendarActivity::class.java))
+                if (dx > 80 && Math.abs(dx) > Math.abs(dy) * 1.5 && Math.abs(velocityX) > 120) {
+                    openCalendar()
                     return true
                 }
                 return false
             }
         })
 
+        binding.pageIndicator.setOnClickListener { openCalendar() }
+
         ThemeManager.apply(this)
+    }
+
+    private fun openCalendar() {
+        startActivity(Intent(this, CalendarActivity::class.java))
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
